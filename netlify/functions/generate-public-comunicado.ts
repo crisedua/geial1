@@ -118,6 +118,21 @@ export const handler: Handler = async (event) => {
     console.log('Generating comunicado with data:', { ecosystem, focus, date, milestone, email })
     console.log('Using reports:', availableReports.length, 'reports')
     
+    // Debug: Log what reports we're actually using
+    availableReports.forEach((report, index) => {
+      console.log(`Report ${index + 1}:`, {
+        id: report.id,
+        title: report.title,
+        ecosystem: report.ecosystem,
+        status: report.status,
+        chunks_count: report.chunks?.length || 0
+      })
+      
+      if (report.chunks && report.chunks.length > 0) {
+        console.log(`  First chunk preview:`, report.chunks[0].content?.substring(0, 150) + '...')
+      }
+    })
+    
     const comunicado = await generatePublicComunicado({
       ecosystem,
       focus,
@@ -128,7 +143,8 @@ export const handler: Handler = async (event) => {
     })
     
     console.log('Generated comunicado length:', comunicado?.length || 0)
-    console.log('Generated comunicado preview:', comunicado?.substring(0, 100) + '...')
+    console.log('Generated comunicado preview:', comunicado?.substring(0, 200) + '...')
+    console.log('Full generated comunicado:', comunicado)
 
     // Save the comunicado to the database
     const { data: comunicadoData, error: comunicadoError } = await supabase
@@ -287,6 +303,37 @@ reporte_local (texto completo): ${JSON.stringify(reporteLocal, null, 2)}
 reporte_comparado (texto completo con todos los ecosistemas): ${JSON.stringify(reporteComparado, null, 2)}
 
 Genera el comunicado siguiendo exactamente el formato especificado.`
+
+    console.log('=== AI PROMPT DEBUG ===')
+    console.log('System prompt length:', systemPrompt.length)
+    console.log('User prompt length:', userPrompt.length)
+    console.log('reporteLocal data:', {
+      id: reporteLocal?.id,
+      title: reporteLocal?.title,
+      ecosystem: reporteLocal?.ecosystem,
+      chunks_count: reporteLocal?.chunks?.length || 0
+    })
+    console.log('reporteComparado data:', {
+      id: reporteComparado?.id,
+      title: reporteComparado?.title,
+      ecosystem: reporteComparado?.ecosystem,
+      chunks_count: reporteComparado?.chunks?.length || 0
+    })
+    
+    if (reporteLocal?.chunks && reporteLocal.chunks.length > 0) {
+      console.log('reporteLocal first chunk:', reporteLocal.chunks[0].content?.substring(0, 200) + '...')
+    } else {
+      console.log('reporteLocal has no chunks!')
+    }
+    
+    if (reporteComparado?.chunks && reporteComparado.chunks.length > 0) {
+      console.log('reporteComparado first chunk:', reporteComparado.chunks[0].content?.substring(0, 200) + '...')
+    } else {
+      console.log('reporteComparado has no chunks!')
+    }
+    console.log('=== END AI PROMPT DEBUG ===')
+    
+    console.log('Making OpenAI API call...')
 
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
