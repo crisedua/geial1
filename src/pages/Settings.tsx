@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { Settings as SettingsIcon, User, Key, Bell, Shield } from 'lucide-react'
+import { User, Key, Bell, Shield } from 'lucide-react'
 
 export default function Settings() {
   const { user } = useAuth()

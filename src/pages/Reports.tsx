@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useDatabase } from '../contexts/DatabaseContext'
 import { Report } from '../types'
-import { FileText, Download, Trash2, Eye, Search, Filter } from 'lucide-react'
+import { FileText, Download, Trash2, Eye, Search } from 'lucide-react'
 
 export default function Reports() {
   const { getReports, deleteReport } = useDatabase()

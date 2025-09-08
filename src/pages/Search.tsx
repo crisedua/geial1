@@ -4,13 +4,12 @@ import { SearchResult } from '../types'
 import { Search as SearchIcon, FileText, MapPin, Calendar } from 'lucide-react'
 
 export default function Search() {
-  const { searchChunks, getEcosystems } = useDatabase()
+  const { searchChunks } = useDatabase()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
   const [ecosystemFilter, setEcosystemFilter] = useState('')
   const [regionFilter, setRegionFilter] = useState('')
-  const [ecosystems, setEcosystems] = useState<Array<{id: string, name: string, region: string}>>([])
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -87,19 +86,14 @@ export default function Search() {
               <label htmlFor="ecosystem" className="block text-sm font-medium text-gray-700 mb-2">
                 Ecosystem (Optional)
               </label>
-              <select
+              <input
+                type="text"
                 id="ecosystem"
                 value={ecosystemFilter}
                 onChange={(e) => setEcosystemFilter(e.target.value)}
                 className="input-field"
-              >
-                <option value="">All Ecosystems</option>
-                {ecosystems.map((eco) => (
-                  <option key={eco.id} value={eco.name}>
-                    {eco.name}
-                  </option>
-                ))}
-              </select>
+                placeholder="Filter by ecosystem"
+              />
             </div>
 
             <div>

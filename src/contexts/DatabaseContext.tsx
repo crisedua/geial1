@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react'
+import React, { createContext, useContext } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Report, Chunk, Contact, Comunicado, SearchResult, ProcessingStatus, Ecosystem } from '../types'
 
@@ -46,10 +46,8 @@ interface DatabaseContextType {
 const DatabaseContext = createContext<DatabaseContextType | undefined>(undefined)
 
 export function DatabaseProvider({ children }: { children: React.ReactNode }) {
-  const [loading, setLoading] = useState(false)
 
   const uploadReport = async (file: File, title: string, ecosystem: string, region: string): Promise<Report> => {
-    setLoading(true)
     try {
       // Upload file to Supabase Storage
       const fileExt = file.name.split('.').pop()
@@ -86,8 +84,8 @@ export function DatabaseProvider({ children }: { children: React.ReactNode }) {
       })
 
       return data
-    } finally {
-      setLoading(false)
+    } catch (error) {
+      throw error
     }
   }
 

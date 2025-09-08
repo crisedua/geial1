@@ -1,23 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useDatabase } from '../contexts/DatabaseContext'
-import { Report, Ecosystem } from '../types'
+import { Report } from '../types'
 import { BarChart3, TrendingUp, FileText, Users } from 'lucide-react'
 
 export default function Dashboard() {
-  const { getReports, getEcosystems } = useDatabase()
+  const { getReports } = useDatabase()
   const [reports, setReports] = useState<Report[]>([])
-  const [ecosystems, setEcosystems] = useState<Ecosystem[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [reportsData, ecosystemsData] = await Promise.all([
-          getReports(),
-          getEcosystems()
-        ])
+        const reportsData = await getReports()
         setReports(reportsData)
-        setEcosystems(ecosystemsData)
       } catch (error) {
         console.error('Error loading dashboard data:', error)
       } finally {
@@ -26,7 +21,7 @@ export default function Dashboard() {
     }
 
     loadData()
-  }, [getReports, getEcosystems])
+  }, [getReports])
 
   if (loading) {
     return (
