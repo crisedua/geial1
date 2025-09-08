@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useDatabase } from '../contexts/DatabaseContext'
 import { Report, Contact, Comunicado } from '../types'
 import { 
@@ -12,11 +12,13 @@ import {
   Search,
   Users,
   AlertCircle,
-  Loader
+  Loader,
+  X,
+  CheckCircle
 } from 'lucide-react'
 
 export default function AdminDashboard() {
-  const { getReports, getContacts, getComunicados, getEcosystems } = useDatabase()
+  const { getReports, getContacts, getComunicados, getEcosystems, uploadReport } = useDatabase()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [reports, setReports] = useState<Report[]>([])
   const [contacts, setContacts] = useState<Contact[]>([])
@@ -24,6 +26,16 @@ export default function AdminDashboard() {
   const [ecosystems, setEcosystems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  
+  // Upload states
+  const [uploadFile, setUploadFile] = useState<File | null>(null)
+  const [uploadTitle, setUploadTitle] = useState('')
+  const [uploadEcosystem, setUploadEcosystem] = useState('')
+  const [uploadRegion, setUploadRegion] = useState('')
+  const [uploadLoading, setUploadLoading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const [uploadSuccess, setUploadSuccess] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const loadData = async () => {
@@ -49,6 +61,90 @@ export default function AdminDashboard() {
 
     loadData()
   }, [getReports, getContacts, getComunicados, getEcosystems])
+
+  // Upload handlers
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0]
+    if (selectedFile) {
+      if (selectedFile.type !== 'application/pdf') {
+        setUploadError('Por favor selecciona un archivo PDF')
+        return
+      }
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        setUploadError('El archivo debe ser menor a 10MB')
+        return
+      }
+      setUploadFile(selectedFile)
+      setUploadError('')
+      if (!uploadTitle) {
+        setUploadTitle(selectedFile.name.replace('.pdf', ''))
+      }
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    const droppedFile = e.dataTransfer.files[0]
+    if (droppedFile) {
+      if (droppedFile.type !== 'application/pdf') {
+        setUploadError('Por favor selecciona un archivo PDF')
+        return
+      }
+      if (droppedFile.size > 10 * 1024 * 1024) {
+        setUploadError('El archivo debe ser menor a 10MB')
+        return
+      }
+      setUploadFile(droppedFile)
+      setUploadError('')
+      if (!uploadTitle) {
+        setUploadTitle(droppedFile.name.replace('.pdf', ''))
+      }
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+  }
+
+  const removeFile = () => {
+    setUploadFile(null)
+    setUploadTitle('')
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const handleUploadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!uploadFile || !uploadTitle || !uploadEcosystem || !uploadRegion) {
+      setUploadError('Por favor completa todos los campos')
+      return
+    }
+
+    setUploadLoading(true)
+    setUploadError('')
+    setUploadSuccess('')
+
+    try {
+      await uploadReport(uploadFile, uploadTitle, uploadEcosystem, uploadRegion)
+      setUploadSuccess('¡Informe subido exitosamente! El procesamiento comenzará en breve.')
+      setUploadFile(null)
+      setUploadTitle('')
+      setUploadEcosystem('')
+      setUploadRegion('')
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+      // Reload data to show new report
+      setTimeout(() => {
+        loadData()
+      }, 1000)
+    } catch (err: any) {
+      setUploadError(err.message || 'Error al subir el informe')
+    } finally {
+      setUploadLoading(false)
+    }
+  }
 
   const navigationItems = [
     { id: 'dashboard', name: 'Dashboard', icon: BarChart3 },
@@ -366,18 +462,143 @@ export default function AdminDashboard() {
         {activeTab === 'upload' && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">Subir Informes</h2>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-              <Upload className="mx-auto h-12 w-12 text-gray-400" />
-              <div className="mt-4">
-                <p className="text-sm text-gray-600">
-                  <span className="font-medium text-blue-600">Haz clic para subir</span> o arrastra y suelta
-                </p>
-                <p className="text-xs text-gray-500 mt-1">Archivos PDF, hasta 10MB</p>
+            
+            {uploadSuccess && (
+              <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center space-x-2">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <p className="text-green-800">{uploadSuccess}</p>
               </div>
-              <button className="mt-4 btn-primary">
-                Seleccionar Archivo
-              </button>
-            </div>
+            )}
+
+            {uploadError && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
+                <AlertCircle className="h-5 w-5 text-red-600" />
+                <p className="text-red-800">{uploadError}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleUploadSubmit} className="space-y-6">
+              {/* File Upload Area */}
+              <div 
+                className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors"
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+              >
+                {uploadFile ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center space-x-2">
+                      <FileText className="h-8 w-8 text-blue-500" />
+                      <span className="text-sm font-medium text-gray-900">{uploadFile.name}</span>
+                      <button
+                        type="button"
+                        onClick={removeFile}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      {(uploadFile.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium text-blue-600">Haz clic para subir</span> o arrastra y suelta
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">Archivos PDF, hasta 10MB</p>
+                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                      Seleccionar Archivo
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Form Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Título del Informe
+                  </label>
+                  <input
+                    type="text"
+                    value={uploadTitle}
+                    onChange={(e) => setUploadTitle(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Ingresa el título del informe"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Ecosistema
+                  </label>
+                  <select
+                    value={uploadEcosystem}
+                    onChange={(e) => setUploadEcosystem(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  >
+                    <option value="">Selecciona un ecosistema</option>
+                    {ecosystems.map((eco) => (
+                      <option key={eco.id} value={eco.name}>
+                        {eco.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Región
+                  </label>
+                  <input
+                    type="text"
+                    value={uploadRegion}
+                    onChange={(e) => setUploadRegion(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Ingresa la región"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={uploadLoading || !uploadFile}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                >
+                  {uploadLoading ? (
+                    <>
+                      <Loader className="h-4 w-4 animate-spin" />
+                      <span>Subiendo...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4" />
+                      <span>Subir Informe</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         )}
       </div>
