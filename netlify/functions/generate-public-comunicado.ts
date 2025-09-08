@@ -35,7 +35,7 @@ export const handler: Handler = async (event) => {
       }
     }
 
-    // Get reports for the specified ecosystem
+    // Get reports for the specified ecosystem with flexible matching
     const { data: reports, error: reportsError } = await supabase
       .from('reports')
       .select(`
@@ -45,10 +45,13 @@ export const handler: Handler = async (event) => {
           section_type
         )
       `)
-      .eq('ecosystem', ecosystem)
+      .ilike('ecosystem', `%${ecosystem}%`)
       .eq('status', 'completed')
       .order('created_at', { ascending: false })
       .limit(5)
+
+    console.log('Searching for ecosystem:', ecosystem)
+    console.log('Found reports:', reports?.length || 0)
 
     if (reportsError) {
       return {
@@ -60,6 +63,8 @@ export const handler: Handler = async (event) => {
     // If no reports found for the specific ecosystem, get general reports
     let generalReports = []
     if (!reports || reports.length === 0) {
+      console.log('No specific ecosystem reports found, trying general reports...')
+      
       const { data: generalData } = await supabase
         .from('reports')
         .select(`
@@ -74,6 +79,18 @@ export const handler: Handler = async (event) => {
         .limit(3)
       
       generalReports = generalData || []
+      console.log('Found general reports:', generalReports.length)
+      
+      // If still no reports, check what reports exist in the database
+      if (generalReports.length === 0) {
+        const { data: allReports } = await supabase
+          .from('reports')
+          .select('id, title, ecosystem, status')
+          .order('created_at', { ascending: false })
+          .limit(10)
+        
+        console.log('All reports in database:', allReports)
+      }
     }
 
     const availableReports = reports || generalReports
