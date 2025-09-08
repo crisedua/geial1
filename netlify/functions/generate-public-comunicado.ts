@@ -18,6 +18,10 @@ interface PublicComunicadoRequest {
 }
 
 export const handler: Handler = async (event) => {
+  console.log('=== API FUNCTION DEBUG START ===')
+  console.log('HTTP Method:', event.httpMethod)
+  console.log('Event body:', event.body)
+  
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -26,9 +30,14 @@ export const handler: Handler = async (event) => {
   }
 
   try {
-    const { ecosystem, focus, date, milestone, email }: PublicComunicadoRequest = JSON.parse(event.body || '{}')
+    const requestData = JSON.parse(event.body || '{}')
+    console.log('Parsed request data:', requestData)
+    
+    const { ecosystem, focus, date, milestone, email }: PublicComunicadoRequest = requestData
+    console.log('Extracted fields:', { ecosystem, focus, date, milestone, email })
 
     if (!ecosystem || !email) {
+      console.log('Validation failed - missing required fields')
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'Ecosystem and email are required' })
@@ -106,6 +115,9 @@ export const handler: Handler = async (event) => {
     }
 
     // Generate comunicado using the available data
+    console.log('Generating comunicado with data:', { ecosystem, focus, date, milestone, email })
+    console.log('Using reports:', availableReports.length, 'reports')
+    
     const comunicado = await generatePublicComunicado({
       ecosystem,
       focus,
@@ -114,6 +126,9 @@ export const handler: Handler = async (event) => {
       email,
       reports: availableReports
     })
+    
+    console.log('Generated comunicado length:', comunicado?.length || 0)
+    console.log('Generated comunicado preview:', comunicado?.substring(0, 100) + '...')
 
     // Save the comunicado to the database
     const { data: comunicadoData, error: comunicadoError } = await supabase
@@ -130,6 +145,8 @@ export const handler: Handler = async (event) => {
 
     if (comunicadoError) {
       console.error('Error saving comunicado to database:', comunicadoError)
+    } else {
+      console.log('Comunicado saved to database successfully:', comunicadoData?.id)
     }
 
     // Save the request for tracking
@@ -145,15 +162,23 @@ export const handler: Handler = async (event) => {
         reports_used: availableReports.map(r => r.id)
       })
 
+    const responseData = {
+      success: true,
+      comunicado,
+      ecosystem,
+      reportsUsed: availableReports.length,
+      message: 'Comunicado generado exitosamente'
+    }
+    
+    console.log('Returning response data:', {
+      ...responseData,
+      comunicado: responseData.comunicado?.substring(0, 100) + '...'
+    })
+    console.log('=== API FUNCTION DEBUG END ===')
+
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        success: true,
-        comunicado,
-        ecosystem,
-        reportsUsed: availableReports.length,
-        message: 'Comunicado generado exitosamente'
-      })
+      body: JSON.stringify(responseData)
     }
 
   } catch (error: any) {
