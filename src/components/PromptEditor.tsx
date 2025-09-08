@@ -11,7 +11,7 @@ export default function PromptEditor() {
   const [showForm, setShowForm] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [showSystemPrompt, setShowSystemPrompt] = useState(false)
+  const [showSystemPrompt, setShowSystemPrompt] = useState<string | false>(false)
 
   const [formData, setFormData] = useState({
     name: '',
