@@ -258,38 +258,42 @@ async function generatePublicComunicado(data: {
     const reporteComparado = data.reports.find(r => r.title.toLowerCase().includes('comparado')) || data.reports[1] || data.reports[0]
 
     const systemPrompt = `Rol
-Eres un asistente especializado en redactar comunicados de prensa breves y ejecutivos usando DOS fuentes internas:
-Reporte del ecosistema local (prioritario) y 2) Reporte GEIAL comparado (contexto regional).
-No inventes información. Si un dato no está en los reportes, escribe "No especificado".
+Eres un experto en comunicación estratégica especializado en redactar comunicados de prensa detallados y profesionales para ecosistemas de emprendimiento e innovación. Usa DOS fuentes principales:
+1) Reporte del ecosistema local específico (prioritario)
+2) Reporte GEIAL comparado (contexto regional y benchmarking)
 
-Reglas de uso de fuentes
-Primero extrae métricas, hallazgos y conclusiones del reporte_local (solo del ecosistema ${data.ecosystem}).
-Luego complementa con el reporte_comparado buscando solo información del mismo ecosistema y, si es útil, 1 dato regional/latam para contexto.
-Cada cifra o hecho relevante debe incluir cita entre paréntesis con página o sección: ej. (p. 52) o (sección "Resultados locales").
-Si hay contradicción entre reportes, prioriza el reporte_local y añade: (según Reporte GEIAL comparado, ver p. X).
+Extrae TODA la información relevante de los reportes. No inventes datos, pero sí extrae y presenta todos los datos, métricas, eventos, iniciativas, nombres, citas y detalles específicos que encuentres.
 
-Estilo y límites
-Tono ejecutivo, claro y conciso.
-180–220 palabras total.
-Evita superlativos no sustentados.
-Sustituye muletillas/errores.
-Usa "No especificado" cuando falte cualquier dato clave (fecha/hora del hito, métricas, etc.).
+Reglas de extracción de datos
+- Busca y extrae TODOS los datos específicos: métricas, rankings, porcentajes, números, fechas, eventos
+- Incluye nombres de personas, organizaciones, programas e iniciativas mencionados
+- Extrae citas textuales y declaraciones importantes
+- Busca información sobre: MIT REAP, eventos específicos, mediciones GEIAL, proyecciones futuras
+- Identifica colaboraciones, alianzas estratégicas y proyectos clave
+- Encuentra datos comparativos con otros ecosistemas latinoamericanos
 
-Formato de salida (obligatorio)
-Devuelve solo texto, sin explicaciones, con este orden:
-[${data.ecosystem}, ${fechaFormateada} — TITULAR corto y directo]
-(1–12 palabras; opcional: subtítulo de 1 línea)
-Párrafo 1 — Qué es GEIAL y conclusión del ecosistema (2–3 oraciones):
-1 oración: definición muy breve de GEIAL (1 línea).
-1–2 oraciones: conclusión contundente sobre ${data.ecosystem} (fortaleza o reto principal) con cita (p. X).
-Párrafo 2 — Desarrollo del focus (2–4 oraciones):
-Explica el ${data.focus || 'análisis del ecosistema'} en este ecosistema.
-Incluye métricas/datos clave del reporte_local y, si procede, 1 contraste del comparado. Cita páginas.
-Si faltan métricas: "No especificado".
-Párrafo 3 — Invitación al hito / CTA (1–3 oraciones):
-Anuncia ${data.milestone || 'próximas actividades'} (qué, cuándo, quiénes). Si faltan datos: "No especificado".
-Llamado a la acción (asistir, inscribirse, descargar).
-Contacto de prensa: ${data.email} y "No especificado" para nombre/teléfono si no vienen.`
+Estructura del comunicado (400-600 palabras)
+TITULAR: [${data.ecosystem} + tema principal del ${data.focus || 'ecosistema'}]
+
+PÁRRAFO 1 - Introducción y contexto GEIAL (80-100 palabras):
+Explica qué es GEIAL y su relevancia. Presenta la conclusión principal sobre ${data.ecosystem} con datos específicos del reporte.
+
+PÁRRAFO 2 - Desarrollo del enfoque principal (120-150 palabras):
+Desarrolla detalladamente el tema del ${data.focus || 'análisis del ecosistema'}.
+Incluye todas las métricas, datos cuantitativos, rankings y comparaciones encontrados.
+Menciona programas específicos, iniciativas y colaboraciones.
+
+PÁRRAFO 3 - Eventos destacados y actividades (100-120 palabras):
+Describe eventos específicos mencionados en los reportes.
+Incluye fechas, participantes, objetivos y resultados esperados.
+Menciona colaboraciones institucionales y alianzas estratégicas.
+
+PÁRRAFO 4 - Proyecciones y llamado a la acción (80-100 palabras):
+Presenta las proyecciones y planes futuros encontrados en los reportes.
+Anuncia el ${data.milestone || 'próximo hito'} con todos los detalles disponibles.
+Contacto: ${data.email}
+
+IMPORTANTE: Usa todos los datos específicos que encuentres en los reportes. Si hay nombres, cítalos. Si hay cifras, inclúyelas. Si hay eventos, descríbelos. El comunicado debe ser rico en información concreta y específica.`
 
     const userPrompt = `Entradas (exactas)
 ecosistema: ${data.ecosystem}
@@ -341,7 +345,7 @@ Genera el comunicado siguiendo exactamente el formato especificado.`
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
-      max_tokens: 800,
+      max_tokens: 1500,
       temperature: 0.3
     })
 
