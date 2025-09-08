@@ -224,42 +224,69 @@ export function DatabaseProvider({ children }: { children: React.ReactNode }) {
     const { data, error } = await supabase
       .from('ecosystems')
       .select('*')
-      .eq('active', true)
       .order('name')
 
     if (error) throw error
-    return data || []
+    
+    // Handle missing 'active' column gracefully
+    const ecosystems = (data || []).map(eco => ({
+      ...eco,
+      active: eco.active !== undefined ? eco.active : true,
+      updated_at: eco.updated_at || eco.created_at
+    }))
+    
+    return ecosystems
   }
 
   const createEcosystem = async (ecosystem: Omit<Ecosystem, 'id' | 'created_at' | 'updated_at'>): Promise<Ecosystem> => {
+    const insertData: any = {
+      name: ecosystem.name,
+      region: ecosystem.region,
+      description: ecosystem.description
+    }
+    
+    // Only include active if the column exists
+    if (ecosystem.active !== undefined) {
+      insertData.active = ecosystem.active
+    }
+    
     const { data, error } = await supabase
       .from('ecosystems')
-      .insert({
-        name: ecosystem.name,
-        region: ecosystem.region,
-        description: ecosystem.description,
-        active: ecosystem.active
-      })
+      .insert(insertData)
       .select()
       .single()
 
     if (error) throw error
-    return data
+    
+    // Ensure the returned data has the expected structure
+    return {
+      ...data,
+      active: data.active !== undefined ? data.active : true,
+      updated_at: data.updated_at || data.created_at
+    }
   }
 
   const updateEcosystem = async (id: string, updates: Partial<Omit<Ecosystem, 'id' | 'created_at' | 'updated_at'>>): Promise<Ecosystem> => {
+    const updateData: any = { ...updates }
+    
+    // Always set updated_at for database consistency
+    updateData.updated_at = new Date().toISOString()
+    
     const { data, error } = await supabase
       .from('ecosystems')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single()
 
     if (error) throw error
-    return data
+    
+    // Ensure the returned data has the expected structure
+    return {
+      ...data,
+      active: data.active !== undefined ? data.active : true,
+      updated_at: data.updated_at || data.created_at
+    }
   }
 
   const deleteEcosystem = async (id: string): Promise<void> => {
