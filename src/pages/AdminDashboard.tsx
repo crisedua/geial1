@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useDatabase } from '../contexts/DatabaseContext'
+import { Report, Contact, Comunicado } from '../types'
 import { 
   FileText, 
   Upload, 
@@ -8,11 +10,45 @@ import {
   BarChart3,
   Settings,
   Search,
-  Users
+  Users,
+  AlertCircle,
+  Loader
 } from 'lucide-react'
 
 export default function AdminDashboard() {
+  const { getReports, getContacts, getComunicados, getEcosystems } = useDatabase()
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [reports, setReports] = useState<Report[]>([])
+  const [contacts, setContacts] = useState<Contact[]>([])
+  const [comunicados, setComunicados] = useState<Comunicado[]>([])
+  const [ecosystems, setEcosystems] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true)
+        const [reportsData, contactsData, comunicadosData, ecosystemsData] = await Promise.all([
+          getReports(),
+          getContacts(),
+          getComunicados(),
+          getEcosystems()
+        ])
+        setReports(reportsData)
+        setContacts(contactsData)
+        setComunicados(comunicadosData)
+        setEcosystems(ecosystemsData)
+      } catch (err: any) {
+        setError(err.message || 'Error loading data')
+        console.error('Error loading admin dashboard data:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [getReports, getContacts, getComunicados, getEcosystems])
 
   const navigationItems = [
     { id: 'dashboard', name: 'Dashboard', icon: BarChart3 },
@@ -27,12 +63,104 @@ export default function AdminDashboard() {
     { id: 'settings', name: 'Configuración', icon: Settings }
   ]
 
+  // Calculate real stats from database
   const stats = [
-    { name: 'Total Informes', value: '24', icon: FileText, color: 'text-blue-600' },
-    { name: 'Ubicaciones', value: '12', icon: MapPin, color: 'text-green-600' },
-    { name: 'Comunicados', value: '8', icon: MessageSquare, color: 'text-purple-600' },
-    { name: 'Contactos', value: '156', icon: Users, color: 'text-orange-600' }
+    { 
+      name: 'Total Informes', 
+      value: reports.length.toString(), 
+      icon: FileText, 
+      color: 'text-blue-600' 
+    },
+    { 
+      name: 'Ubicaciones', 
+      value: ecosystems.length.toString(), 
+      icon: MapPin, 
+      color: 'text-green-600' 
+    },
+    { 
+      name: 'Comunicados', 
+      value: comunicados.length.toString(), 
+      icon: MessageSquare, 
+      color: 'text-purple-600' 
+    },
+    { 
+      name: 'Contactos', 
+      value: contacts.length.toString(), 
+      icon: Users, 
+      color: 'text-orange-600' 
+    }
   ]
+
+  // Get recent reports (last 5)
+  const recentReports = reports
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 5)
+
+  // Get recent comunicados (last 3)
+  const recentComunicados = comunicados
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 3)
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800'
+      case 'processing':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'failed':
+        return 'bg-red-100 text-red-800'
+      case 'sent':
+        return 'bg-blue-100 text-blue-800'
+      case 'draft':
+        return 'bg-gray-100 text-gray-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+    
+    if (diffInHours < 1) {
+      return 'Hace menos de 1 hora'
+    } else if (diffInHours < 24) {
+      return `Hace ${diffInHours} hora${diffInHours !== 1 ? 's' : ''}`
+    } else {
+      const diffInDays = Math.floor(diffInHours / 24)
+      return `Hace ${diffInDays} día${diffInDays !== 1 ? 's' : ''}`
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex items-center space-x-3">
+          <Loader className="h-6 w-6 animate-spin text-blue-600" />
+          <span className="text-gray-600">Cargando datos...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-lg font-medium text-gray-900 mb-2">Error cargando datos</h2>
+          <p className="text-gray-600">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 btn-primary"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -49,7 +177,10 @@ export default function AdminDashboard() {
             </div>
 
             {/* Primary Action Button */}
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
+            <button 
+              onClick={() => setActiveTab('upload')}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+            >
               <Upload className="h-4 w-4" />
               <span>Subir Informes</span>
             </button>
@@ -75,7 +206,7 @@ export default function AdminDashboard() {
             {/* User Profile */}
             <div className="flex items-center space-x-3">
               <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-blue-600">E</span>
+                <span className="text-sm font-medium text-blue-600">A</span>
               </div>
             </div>
           </div>
@@ -107,31 +238,127 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-medium text-gray-900 mb-4">Actividad Reciente</h2>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <FileText className="h-5 w-5 text-blue-500" />
-                    <div>
-                      <p className="font-medium text-gray-900">Informe Q4 2024 - Santiago</p>
-                      <p className="text-sm text-gray-500">Subido hace 2 horas</p>
-                    </div>
-                  </div>
-                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                    Completado
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <MessageSquare className="h-5 w-5 text-purple-500" />
-                    <div>
-                      <p className="font-medium text-gray-900">Comunicado Fintech LATAM</p>
-                      <p className="text-sm text-gray-500">Generado hace 4 horas</p>
-                    </div>
-                  </div>
-                  <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                    Enviado
-                  </span>
-                </div>
+                {recentReports.length === 0 && recentComunicados.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No hay actividad reciente</p>
+                ) : (
+                  <>
+                    {recentReports.map((report) => (
+                      <div key={report.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <FileText className="h-5 w-5 text-blue-500" />
+                          <div>
+                            <p className="font-medium text-gray-900">{report.title}</p>
+                            <p className="text-sm text-gray-500">{formatDate(report.created_at)} • {report.ecosystem}</p>
+                          </div>
+                        </div>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(report.status)}`}>
+                          {report.status === 'completed' ? 'Completado' : 
+                           report.status === 'processing' ? 'Procesando' : 
+                           report.status === 'failed' ? 'Falló' : report.status}
+                        </span>
+                      </div>
+                    ))}
+                    {recentComunicados.map((comunicado) => (
+                      <div key={comunicado.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <MessageSquare className="h-5 w-5 text-purple-500" />
+                          <div>
+                            <p className="font-medium text-gray-900">{comunicado.title}</p>
+                            <p className="text-sm text-gray-500">{formatDate(comunicado.created_at)}</p>
+                          </div>
+                        </div>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(comunicado.status)}`}>
+                          {comunicado.status === 'sent' ? 'Enviado' : 'Borrador'}
+                        </span>
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'reports' && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Informes</h2>
+            <div className="space-y-3">
+              {reports.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No hay informes disponibles</p>
+              ) : (
+                reports.map((report) => (
+                  <div key={report.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <FileText className="h-5 w-5 text-red-500" />
+                      <div>
+                        <p className="font-medium text-gray-900">{report.title}</p>
+                        <p className="text-sm text-gray-500">
+                          {report.ecosystem} • {report.region} • {new Date(report.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(report.status)}`}>
+                      {report.status === 'completed' ? 'Completado' : 
+                       report.status === 'processing' ? 'Procesando' : 
+                       report.status === 'failed' ? 'Falló' : report.status}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'comunicados' && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Comunicados</h2>
+            <div className="space-y-3">
+              {comunicados.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No hay comunicados disponibles</p>
+              ) : (
+                comunicados.map((comunicado) => (
+                  <div key={comunicado.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <MessageSquare className="h-5 w-5 text-purple-500" />
+                      <div>
+                        <p className="font-medium text-gray-900">{comunicado.title}</p>
+                        <p className="text-sm text-gray-500">
+                          {comunicado.report_ids.length} reporte{comunicado.report_ids.length !== 1 ? 's' : ''} • 
+                          {new Date(comunicado.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(comunicado.status)}`}>
+                      {comunicado.status === 'sent' ? 'Enviado' : 'Borrador'}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'contacts' && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Contactos</h2>
+            <div className="space-y-3">
+              {contacts.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No hay contactos disponibles</p>
+              ) : (
+                contacts.map((contact) => (
+                  <div key={contact.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Users className="h-5 w-5 text-orange-500" />
+                      <div>
+                        <p className="font-medium text-gray-900">{contact.name}</p>
+                        <p className="text-sm text-gray-500">
+                          {contact.email} • {contact.organization} • {contact.ecosystem}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}
@@ -147,31 +374,12 @@ export default function AdminDashboard() {
                 </p>
                 <p className="text-xs text-gray-500 mt-1">Archivos PDF, hasta 10MB</p>
               </div>
+              <button className="mt-4 btn-primary">
+                Seleccionar Archivo
+              </button>
             </div>
           </div>
         )}
-
-        {activeTab === 'reports' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Informes</h2>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <FileText className="h-5 w-5 text-red-500" />
-                  <div>
-                    <p className="font-medium text-gray-900">Informe Q4 2024 - Santiago</p>
-                    <p className="text-sm text-gray-500">Chile • Santiago • 15/01/2025</p>
-                  </div>
-                </div>
-                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                  Completado
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Add more tab content as needed */}
       </div>
     </div>
   )
