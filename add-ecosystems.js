@@ -51,8 +51,7 @@ async function addEcosystems() {
         .insert({
           name: ecosystem.name,
           region: ecosystem.region,
-          description: ecosystem.description,
-          active: true
+          description: ecosystem.description
         })
         .select()
 
