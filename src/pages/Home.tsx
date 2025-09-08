@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { FileText, Send, AlertTriangle, Calendar, ChevronDown } from 'lucide-react'
+import { FileText, Send, Calendar, ChevronDown } from 'lucide-react'
 
 const ecosystems = [
   'Argentina - Córdoba capital',
@@ -105,15 +105,6 @@ export default function Home() {
             Complete los siguientes datos para recibir su informe y comunicado de prensa
           </p>
 
-          {/* Warning Message */}
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-            <div className="flex items-start">
-              <AlertTriangle className="h-5 w-5 text-orange-500 mt-0.5 mr-3 flex-shrink-0" />
-              <p className="text-orange-800 text-sm">
-                El informe comparado "GEIAL comparado 2024" necesita generar su resumen primero
-              </p>
-            </div>
-          </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -231,17 +222,35 @@ export default function Home() {
           </form>
         </div>
 
-        {/* Admin Access Link */}
-        {user && (
-          <div className="text-center mt-8">
-            <a
-              href="/dashboard"
-              className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-            >
-              Acceso Administrativo
-            </a>
+        {/* Admin Section */}
+        <div className="mt-8">
+          <div className="bg-gray-50 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Sección Administrativa</h3>
+            <p className="text-gray-600 text-sm mb-4">
+              Accede al panel de administración para gestionar reportes, contactos y configuraciones.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <a
+                href="/dashboard"
+                className="btn-primary text-center"
+              >
+                Panel de Control
+              </a>
+              <a
+                href="/upload"
+                className="btn-secondary text-center"
+              >
+                Subir Reportes
+              </a>
+              <a
+                href="/search"
+                className="btn-secondary text-center"
+              >
+                Buscar Documentos
+              </a>
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   )
