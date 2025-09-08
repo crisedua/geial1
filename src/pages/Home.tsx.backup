@@ -94,7 +94,7 @@ export default function Home() {
               <div>
                 <h1 className="text-3xl font-bold">Report Insight Express</h1>
                 <p className="text-primary-100 mt-1">
-                  Selecciona tu ecosistema y recibe informes personalizados (Fixed Version)
+                  Selecciona tu ecosistema y recibe informes personalizados
                 </p>
               </div>
             </div>
@@ -232,7 +232,7 @@ export default function Home() {
               ) : (
                 <Send className="h-5 w-5 mr-2" />
               )}
-              Generar Comunicado (Fixed)
+              Generar Comunicado
             </button>
           </form>
         </div>
