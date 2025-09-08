@@ -11,7 +11,7 @@ const ecosystems = [
   'Chile - Concepción',
   'Chile - La Serena - Coquimbo',
   'Chile - Santiago',
-  'Chile - Valparaiso',
+  'Chile - Valparaíso',
   'Colombia - Barranquilla',
   'Colombia - Bogotá',
   'Colombia - Medellín',
