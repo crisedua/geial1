@@ -285,6 +285,16 @@ export default function AdminDashboard() {
               <h1 className="text-xl font-bold text-gray-900">Report Insight Express</h1>
             </div>
 
+            {/* Home Link */}
+            <div className="flex items-center">
+              <a
+                href="/"
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+              >
+                ← Volver al Inicio
+              </a>
+            </div>
+
 
             {/* Navigation Links */}
             <div className="hidden md:flex items-center space-x-6">
