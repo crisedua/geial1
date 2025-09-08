@@ -37,7 +37,15 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    console.log('=== HOME FORM DEBUG START ===')
+    console.log('Form data being submitted:', formData)
+    
     if (!formData.ecosystem || !formData.email) {
+      console.log('Validation failed - missing required fields:', {
+        ecosystem: formData.ecosystem,
+        email: formData.email
+      })
       setError('Por favor complete los campos requeridos')
       return
     }
@@ -46,23 +54,42 @@ export default function Home() {
     setError('')
     setSuccess('')
     setGeneratedComunicado('')
+    console.log('Loading state set to true, cleared previous states')
 
     try {
+      console.log('Making API request to /api/generate-public-comunicado')
+      console.log('Request body:', JSON.stringify(formData, null, 2))
+      
       const response = await fetch('/api/generate-public-comunicado', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
 
+      console.log('Response received:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      })
+
       const data = await response.json()
+      console.log('Response data:', data)
+      console.log('Data keys:', Object.keys(data))
+      console.log('Data.comunicado:', data.comunicado)
+      console.log('Data.comunicado type:', typeof data.comunicado)
 
       if (!response.ok) {
+        console.error('Response not ok:', data)
         throw new Error(data.message || 'Error al generar el comunicado')
       }
 
       // Display the generated comunicado on screen
+      console.log('Setting comunicado state with:', data.comunicado)
       setGeneratedComunicado(data.comunicado)
+      console.log('Current generatedComunicado state after setting:', generatedComunicado)
+      
       setSuccess('Comunicado generado exitosamente y guardado en la base de datos.')
+      console.log('Success message set')
       
       // Reset form
       setFormData({
@@ -72,10 +99,16 @@ export default function Home() {
         milestone: '',
         email: ''
       })
+      console.log('Form data reset')
     } catch (err: any) {
+      console.error('Error in handleSubmit:', err)
+      console.error('Error message:', err.message)
+      console.error('Error stack:', err.stack)
       setError(err.message || 'Error al generar el comunicado. Intente nuevamente.')
     } finally {
       setLoading(false)
+      console.log('Loading state set to false')
+      console.log('=== HOME FORM DEBUG END ===')
     }
   }
 
