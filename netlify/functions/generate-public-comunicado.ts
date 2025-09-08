@@ -46,7 +46,7 @@ export const handler: Handler = async (event) => {
         )
       `)
       .ilike('ecosystem', `%${ecosystem}%`)
-      .eq('status', 'completed')
+      .in('status', ['completed', 'processing'])
       .order('created_at', { ascending: false })
       .limit(5)
 
@@ -74,7 +74,7 @@ export const handler: Handler = async (event) => {
             section_type
           )
         `)
-        .eq('status', 'completed')
+        .in('status', ['completed', 'processing'])
         .order('created_at', { ascending: false })
         .limit(3)
       
