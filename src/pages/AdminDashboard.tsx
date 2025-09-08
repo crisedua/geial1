@@ -37,28 +37,28 @@ export default function AdminDashboard() {
   const [uploadSuccess, setUploadSuccess] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true)
-        const [reportsData, contactsData, comunicadosData, ecosystemsData] = await Promise.all([
-          getReports(),
-          getContacts(),
-          getComunicados(),
-          getEcosystems()
-        ])
-        setReports(reportsData)
-        setContacts(contactsData)
-        setComunicados(comunicadosData)
-        setEcosystems(ecosystemsData)
-      } catch (err: any) {
-        setError(err.message || 'Error loading data')
-        console.error('Error loading admin dashboard data:', err)
-      } finally {
-        setLoading(false)
-      }
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      const [reportsData, contactsData, comunicadosData, ecosystemsData] = await Promise.all([
+        getReports(),
+        getContacts(),
+        getComunicados(),
+        getEcosystems()
+      ])
+      setReports(reportsData)
+      setContacts(contactsData)
+      setComunicados(comunicadosData)
+      setEcosystems(ecosystemsData)
+    } catch (err: any) {
+      setError(err.message || 'Error loading data')
+      console.error('Error loading admin dashboard data:', err)
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     loadData()
   }, [getReports, getContacts, getComunicados, getEcosystems])
 
