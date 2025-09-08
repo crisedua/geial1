@@ -1,27 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FileText, Send, Calendar, ChevronDown } from 'lucide-react'
-
-const ecosystems = [
-  'Argentina - Córdoba capital',
-  'Argentina - Rafaela',
-  'Argentina - Rio Cuarto',
-  'Argentina - Villa María',
-  'Brasil - San Pablo',
-  'Chile - Antofagasta',
-  'Chile - Concepción',
-  'Chile - La Serena - Coquimbo',
-  'Chile - Santiago',
-  'Chile - Valparaíso',
-  'Colombia - Barranquilla',
-  'Colombia - Bogotá',
-  'Colombia - Medellín',
-  'México - Ciudad de México',
-  'México - Guadalajara',
-  'Perú - Lima',
-  'Uruguay - Montevideo'
-]
+import { useDatabase } from '../contexts/DatabaseContext'
+import { Ecosystem } from '../types'
 
 export default function Home() {
+  const { getEcosystems } = useDatabase()
+  const [ecosystems, setEcosystems] = useState<Ecosystem[]>([])
+  const [ecosystemsLoading, setEcosystemsLoading] = useState(true)
   const [formData, setFormData] = useState({
     ecosystem: '',
     focus: '',
@@ -33,6 +18,22 @@ export default function Home() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [generatedComunicado, setGeneratedComunicado] = useState('')
+
+  useEffect(() => {
+    const loadEcosystems = async () => {
+      try {
+        const data = await getEcosystems()
+        setEcosystems(data)
+      } catch (err) {
+        console.error('Error loading ecosystems:', err)
+        setError('Error cargando ecosistemas')
+      } finally {
+        setEcosystemsLoading(false)
+      }
+    }
+
+    loadEcosystems()
+  }, [getEcosystems])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -131,9 +132,13 @@ export default function Home() {
                   required
                 >
                   <option value="">Selecciona un ecosistema</option>
-                  {ecosystems.map((eco) => (
-                    <option key={eco} value={eco}>{eco}</option>
-                  ))}
+                  {ecosystemsLoading ? (
+                    <option disabled>Cargando ecosistemas...</option>
+                  ) : (
+                    ecosystems.map((eco) => (
+                      <option key={eco.id} value={eco.name}>{eco.name}</option>
+                    ))
+                  )}
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
               </div>

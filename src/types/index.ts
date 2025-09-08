@@ -80,6 +80,8 @@ export interface Ecosystem {
   id: string
   name: string
   region: string
-  description: string
+  description?: string
+  active: boolean
   created_at: string
+  updated_at: string
 }

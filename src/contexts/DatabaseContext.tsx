@@ -37,6 +37,9 @@ interface DatabaseContextType {
   
   // Ecosystems
   getEcosystems: () => Promise<Ecosystem[]>
+  createEcosystem: (ecosystem: Omit<Ecosystem, 'id' | 'created_at' | 'updated_at'>) => Promise<Ecosystem>
+  updateEcosystem: (id: string, updates: Partial<Omit<Ecosystem, 'id' | 'created_at' | 'updated_at'>>) => Promise<Ecosystem>
+  deleteEcosystem: (id: string) => Promise<void>
   
   // AI Generation
   generateComunicado: (reportIds: string[], title: string) => Promise<string>
@@ -221,10 +224,51 @@ export function DatabaseProvider({ children }: { children: React.ReactNode }) {
     const { data, error } = await supabase
       .from('ecosystems')
       .select('*')
+      .eq('active', true)
       .order('name')
 
     if (error) throw error
     return data || []
+  }
+
+  const createEcosystem = async (ecosystem: Omit<Ecosystem, 'id' | 'created_at' | 'updated_at'>): Promise<Ecosystem> => {
+    const { data, error } = await supabase
+      .from('ecosystems')
+      .insert({
+        name: ecosystem.name,
+        region: ecosystem.region,
+        description: ecosystem.description,
+        active: ecosystem.active
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  }
+
+  const updateEcosystem = async (id: string, updates: Partial<Omit<Ecosystem, 'id' | 'created_at' | 'updated_at'>>): Promise<Ecosystem> => {
+    const { data, error } = await supabase
+      .from('ecosystems')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  }
+
+  const deleteEcosystem = async (id: string): Promise<void> => {
+    const { error } = await supabase
+      .from('ecosystems')
+      .delete()
+      .eq('id', id)
+
+    if (error) throw error
   }
 
   const generateComunicado = async (reportIds: string[], title: string): Promise<string> => {
@@ -266,6 +310,9 @@ export function DatabaseProvider({ children }: { children: React.ReactNode }) {
     getComunicados,
     getProcessingStatus,
     getEcosystems,
+    createEcosystem,
+    updateEcosystem,
+    deleteEcosystem,
     generateComunicado,
     generateSummary,
   }

@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useDatabase } from '../contexts/DatabaseContext'
-import { Report, Contact, Comunicado } from '../types'
+import { Report, Contact, Comunicado, Ecosystem } from '../types'
 import { 
   FileText, 
   Upload, 
   MapPin, 
-  Send, 
   MessageSquare, 
   BarChart3,
   Settings,
@@ -14,37 +13,36 @@ import {
   AlertCircle,
   Loader,
   X,
-  CheckCircle
+  CheckCircle,
+  Plus,
+  Edit,
+  Trash2
 } from 'lucide-react'
 
-const ecosystems = [
-  'Argentina - Córdoba capital',
-  'Argentina - Rafaela',
-  'Argentina - Rio Cuarto',
-  'Argentina - Villa María',
-  'Brasil - San Pablo',
-  'Chile - Antofagasta',
-  'Chile - Concepción',
-  'Chile - La Serena - Coquimbo',
-  'Chile - Santiago',
-  'Chile - Valparaíso',
-  'Colombia - Barranquilla',
-  'Colombia - Bogotá',
-  'Colombia - Medellín',
-  'México - Ciudad de México',
-  'México - Guadalajara',
-  'Perú - Lima',
-  'Uruguay - Montevideo'
-]
-
 export default function AdminDashboard() {
-  const { getReports, getContacts, getComunicados, uploadReport } = useDatabase()
+  const { 
+    getReports, 
+    getContacts, 
+    getComunicados, 
+    uploadReport, 
+    getEcosystems, 
+    createEcosystem, 
+    updateEcosystem, 
+    deleteEcosystem 
+  } = useDatabase()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [reports, setReports] = useState<Report[]>([])
   const [contacts, setContacts] = useState<Contact[]>([])
   const [comunicados, setComunicados] = useState<Comunicado[]>([])
+  const [ecosystems, setEcosystems] = useState<Ecosystem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  // Ecosystem management states
+  const [ecosystemForm, setEcosystemForm] = useState({ name: '', region: '', description: '', active: true })
+  const [editingEcosystem, setEditingEcosystem] = useState<string | null>(null)
+  const [ecosystemError, setEcosystemError] = useState('')
+  const [ecosystemSuccess, setEcosystemSuccess] = useState('')
   
   // Upload states
   const [uploadFile, setUploadFile] = useState<File | null>(null)
@@ -59,14 +57,16 @@ export default function AdminDashboard() {
   const loadData = async () => {
     try {
       setLoading(true)
-      const [reportsData, contactsData, comunicadosData] = await Promise.all([
+      const [reportsData, contactsData, comunicadosData, ecosystemsData] = await Promise.all([
         getReports(),
         getContacts(),
-        getComunicados()
+        getComunicados(),
+        getEcosystems()
       ])
       setReports(reportsData)
       setContacts(contactsData)
       setComunicados(comunicadosData)
+      setEcosystems(ecosystemsData)
     } catch (err: any) {
       setError(err.message || 'Error loading data')
       console.error('Error loading admin dashboard data:', err)
@@ -77,7 +77,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     loadData()
-  }, [getReports, getContacts, getComunicados])
+  }, [getReports, getContacts, getComunicados, getEcosystems])
 
   // Upload handlers
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -159,15 +159,72 @@ export default function AdminDashboard() {
     }
   }
 
+  // Ecosystem management functions
+  const handleEcosystemSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!ecosystemForm.name || !ecosystemForm.region) {
+      setEcosystemError('Nombre y región son requeridos')
+      return
+    }
+
+    try {
+      setEcosystemError('')
+      setEcosystemSuccess('')
+
+      if (editingEcosystem) {
+        await updateEcosystem(editingEcosystem, ecosystemForm)
+        setEcosystemSuccess('Ecosistema actualizado exitosamente')
+        setEditingEcosystem(null)
+      } else {
+        await createEcosystem(ecosystemForm)
+        setEcosystemSuccess('Ecosistema creado exitosamente')
+      }
+
+      setEcosystemForm({ name: '', region: '', description: '', active: true })
+      await loadData()
+    } catch (err: any) {
+      setEcosystemError(err.message || 'Error al guardar el ecosistema')
+    }
+  }
+
+  const handleEcosystemEdit = (ecosystem: Ecosystem) => {
+    setEcosystemForm({
+      name: ecosystem.name,
+      region: ecosystem.region,
+      description: ecosystem.description || '',
+      active: ecosystem.active
+    })
+    setEditingEcosystem(ecosystem.id)
+    setEcosystemError('')
+    setEcosystemSuccess('')
+  }
+
+  const handleEcosystemDelete = async (id: string) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar este ecosistema?')) return
+
+    try {
+      await deleteEcosystem(id)
+      setEcosystemSuccess('Ecosistema eliminado exitosamente')
+      await loadData()
+    } catch (err: any) {
+      setEcosystemError(err.message || 'Error al eliminar el ecosistema')
+    }
+  }
+
+  const cancelEcosystemEdit = () => {
+    setEditingEcosystem(null)
+    setEcosystemForm({ name: '', region: '', description: '', active: true })
+    setEcosystemError('')
+    setEcosystemSuccess('')
+  }
+
   const navigationItems = [
     { id: 'dashboard', name: 'Dashboard', icon: BarChart3 },
     { id: 'upload', name: 'Subir Informes', icon: Upload },
     { id: 'reports', name: 'Informes', icon: FileText },
-    { id: 'locations', name: 'Ubicaciones', icon: MapPin },
-    { id: 'distribute', name: 'Distribuir', icon: Send },
-    { id: 'comunicados', name: 'Comunicados', icon: MessageSquare },
-    { id: 'analytics', name: 'Analíticas', icon: BarChart3 },
+    { id: 'ecosystems', name: 'Ecosistemas', icon: MapPin },
     { id: 'contacts', name: 'Contactos', icon: Users },
+    { id: 'comunicados', name: 'Comunicados', icon: MessageSquare },
     { id: 'search', name: 'Buscar', icon: Search },
     { id: 'settings', name: 'Configuración', icon: Settings }
   ]
@@ -420,6 +477,142 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {activeTab === 'ecosystems' && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-medium text-gray-900">Gestión de Ecosistemas</h2>
+            </div>
+
+            {/* Success/Error Messages */}
+            {ecosystemSuccess && (
+              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4 flex items-center">
+                <CheckCircle className="h-5 w-5 mr-2" />
+                {ecosystemSuccess}
+              </div>
+            )}
+            {ecosystemError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 flex items-center">
+                <AlertCircle className="h-5 w-5 mr-2" />
+                {ecosystemError}
+              </div>
+            )}
+
+            {/* Add/Edit Ecosystem Form */}
+            <div className="bg-gray-50 rounded-lg p-6 mb-6">
+              <h3 className="text-md font-medium text-gray-900 mb-4">
+                {editingEcosystem ? 'Editar Ecosistema' : 'Agregar Nuevo Ecosistema'}
+              </h3>
+              <form onSubmit={handleEcosystemSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                    <input
+                      type="text"
+                      value={ecosystemForm.name}
+                      onChange={(e) => setEcosystemForm({ ...ecosystemForm, name: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="ej. Chile - Valparaíso"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Región *</label>
+                    <input
+                      type="text"
+                      value={ecosystemForm.region}
+                      onChange={(e) => setEcosystemForm({ ...ecosystemForm, region: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="ej. Chile"
+                      required
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                  <textarea
+                    value={ecosystemForm.description}
+                    onChange={(e) => setEcosystemForm({ ...ecosystemForm, description: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    rows={3}
+                    placeholder="Descripción opcional del ecosistema"
+                  />
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="ecosystemActive"
+                    checked={ecosystemForm.active}
+                    onChange={(e) => setEcosystemForm({ ...ecosystemForm, active: e.target.checked })}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="ecosystemActive" className="ml-2 block text-sm font-medium text-gray-700">
+                    Activo
+                  </label>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <button
+                    type="submit"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>{editingEcosystem ? 'Actualizar' : 'Agregar'}</span>
+                  </button>
+                  {editingEcosystem && (
+                    <button
+                      type="button"
+                      onClick={cancelEcosystemEdit}
+                      className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+
+            {/* Ecosystems List */}
+            <div>
+              <h3 className="text-md font-medium text-gray-900 mb-4">Ecosistemas Existentes</h3>
+              <div className="space-y-3">
+                {ecosystems.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No hay ecosistemas configurados</p>
+                ) : (
+                  ecosystems.map((ecosystem) => (
+                    <div key={ecosystem.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <MapPin className={`h-5 w-5 ${ecosystem.active ? 'text-green-500' : 'text-gray-400'}`} />
+                        <div>
+                          <p className="font-medium text-gray-900">{ecosystem.name}</p>
+                          <p className="text-sm text-gray-500">
+                            {ecosystem.region} • {ecosystem.active ? 'Activo' : 'Inactivo'}
+                            {ecosystem.description && ` • ${ecosystem.description}`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleEcosystemEdit(ecosystem)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Editar"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleEcosystemDelete(ecosystem.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Eliminar"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'comunicados' && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">Comunicados</h2>
@@ -574,8 +767,8 @@ export default function AdminDashboard() {
                   >
                     <option value="">Selecciona un ecosistema</option>
                     {ecosystems.map((eco) => (
-                      <option key={eco} value={eco}>
-                        {eco}
+                      <option key={eco.id} value={eco.name}>
+                        {eco.name}
                       </option>
                     ))}
                   </select>
