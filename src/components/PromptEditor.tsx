@@ -33,7 +33,8 @@ export default function PromptEditor() {
       const data = await getPrompts()
       setPrompts(data)
     } catch (err: any) {
-      setError('Error loading prompts: ' + err.message)
+      console.error('Error loading prompts:', err)
+      setError('Error loading prompts: ' + err.message + '. Make sure the prompts table exists in the database.')
     } finally {
       setLoading(false)
     }
