@@ -37,10 +37,6 @@ export default function Upload() {
         setError('Please select a PDF file')
         return
       }
-      if (selectedFile.size > 10 * 1024 * 1024) { // 10MB limit
-        setError('File size must be less than 10MB')
-        return
-      }
       setFile(selectedFile)
       setError('')
       if (!title) {
@@ -55,10 +51,6 @@ export default function Upload() {
     if (droppedFile) {
       if (droppedFile.type !== 'application/pdf') {
         setError('Please select a PDF file')
-        return
-      }
-      if (droppedFile.size > 10 * 1024 * 1024) {
-        setError('File size must be less than 10MB')
         return
       }
       setFile(droppedFile)
@@ -139,7 +131,7 @@ export default function Upload() {
                 <p className="text-sm text-gray-600">
                   <span className="font-medium text-primary-600">Click to upload</span> or drag and drop
                 </p>
-                <p className="text-xs text-gray-500 mt-1">PDF files only, up to 10MB</p>
+                <p className="text-xs text-gray-500 mt-1">PDF files only</p>
               </div>
               <input
                 ref={fileInputRef}

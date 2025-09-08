@@ -71,10 +71,6 @@ export default function AdminDashboard() {
         setUploadError('Por favor selecciona un archivo PDF')
         return
       }
-      if (selectedFile.size > 10 * 1024 * 1024) {
-        setUploadError('El archivo debe ser menor a 10MB')
-        return
-      }
       setUploadFile(selectedFile)
       setUploadError('')
       if (!uploadTitle) {
@@ -89,10 +85,6 @@ export default function AdminDashboard() {
     if (droppedFile) {
       if (droppedFile.type !== 'application/pdf') {
         setUploadError('Por favor selecciona un archivo PDF')
-        return
-      }
-      if (droppedFile.size > 10 * 1024 * 1024) {
-        setUploadError('El archivo debe ser menor a 10MB')
         return
       }
       setUploadFile(droppedFile)
@@ -506,7 +498,7 @@ export default function AdminDashboard() {
                       <p className="text-sm text-gray-600">
                         <span className="font-medium text-blue-600">Haz clic para subir</span> o arrastra y suelta
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">Archivos PDF, hasta 10MB</p>
+                      <p className="text-xs text-gray-500 mt-1">Archivos PDF</p>
                     </div>
                     <input
                       ref={fileInputRef}
