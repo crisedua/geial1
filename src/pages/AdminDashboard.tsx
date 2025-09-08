@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useDatabase } from '../contexts/DatabaseContext'
 import { Report, Contact, Comunicado, Ecosystem } from '../types'
+import PromptEditor from '../components/PromptEditor'
 import { 
   FileText, 
   Upload, 
@@ -16,7 +17,8 @@ import {
   CheckCircle,
   Plus,
   Edit,
-  Trash2
+  Trash2,
+  Brain
 } from 'lucide-react'
 
 export default function AdminDashboard() {
@@ -225,6 +227,7 @@ export default function AdminDashboard() {
     { id: 'ecosystems', name: 'Ecosistemas', icon: MapPin },
     { id: 'contacts', name: 'Contactos', icon: Users },
     { id: 'comunicados', name: 'Comunicados', icon: MessageSquare },
+    { id: 'prompts', name: 'Prompts IA', icon: Brain },
     { id: 'search', name: 'Buscar', icon: Search },
     { id: 'settings', name: 'Configuración', icon: Settings }
   ]
@@ -665,6 +668,10 @@ export default function AdminDashboard() {
               )}
             </div>
           </div>
+        )}
+
+        {activeTab === 'prompts' && (
+          <PromptEditor />
         )}
 
         {activeTab === 'upload' && (

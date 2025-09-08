@@ -85,3 +85,17 @@ export interface Ecosystem {
   created_at: string
   updated_at: string
 }
+
+export interface Prompt {
+  id: string
+  name: string
+  description?: string
+  system_prompt: string
+  user_prompt_template?: string
+  model: string
+  max_tokens: number
+  temperature: number
+  active: boolean
+  created_at: string
+  updated_at: string
+}

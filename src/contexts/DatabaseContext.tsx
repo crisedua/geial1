@@ -44,6 +44,13 @@ interface DatabaseContextType {
   // AI Generation
   generateComunicado: (reportIds: string[], title: string) => Promise<string>
   generateSummary: (reportId: string) => Promise<string>
+  
+  // Prompt management
+  getPrompts: () => Promise<any[]>
+  getPromptByName: (name: string) => Promise<any>
+  createPrompt: (promptData: any) => Promise<any>
+  updatePrompt: (id: string, updates: any) => Promise<any>
+  deletePrompt: (id: string) => Promise<void>
 }
 
 const DatabaseContext = createContext<DatabaseContextType | undefined>(undefined)
@@ -322,6 +329,77 @@ export function DatabaseProvider({ children }: { children: React.ReactNode }) {
     return data.content
   }
 
+  // Prompt management functions
+  const getPrompts = async () => {
+    const { data, error } = await supabase
+      .from('prompts')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return data || []
+  }
+
+  const getPromptByName = async (name: string) => {
+    const { data, error } = await supabase
+      .from('prompts')
+      .select('*')
+      .eq('name', name)
+      .eq('active', true)
+      .single()
+
+    if (error) throw error
+    return data
+  }
+
+  const createPrompt = async (promptData: {
+    name: string
+    description?: string
+    system_prompt: string
+    user_prompt_template?: string
+    model?: string
+    max_tokens?: number
+    temperature?: number
+  }) => {
+    const { data, error } = await supabase
+      .from('prompts')
+      .insert(promptData)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  }
+
+  const updatePrompt = async (id: string, updates: {
+    description?: string
+    system_prompt?: string
+    user_prompt_template?: string
+    model?: string
+    max_tokens?: number
+    temperature?: number
+    active?: boolean
+  }) => {
+    const { data, error } = await supabase
+      .from('prompts')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  }
+
+  const deletePrompt = async (id: string): Promise<void> => {
+    const { error } = await supabase
+      .from('prompts')
+      .delete()
+      .eq('id', id)
+
+    if (error) throw error
+  }
+
   const value = {
     uploadReport,
     getReports,
@@ -342,6 +420,11 @@ export function DatabaseProvider({ children }: { children: React.ReactNode }) {
     deleteEcosystem,
     generateComunicado,
     generateSummary,
+    getPrompts,
+    getPromptByName,
+    createPrompt,
+    updatePrompt,
+    deletePrompt,
   }
 
   return (

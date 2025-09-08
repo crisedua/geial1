@@ -114,9 +114,23 @@ export const handler: Handler = async (event) => {
       }
     }
 
+    // Get the active prompt from database
+    const { data: promptData, error: promptError } = await supabase
+      .from('prompts')
+      .select('*')
+      .eq('name', 'comunicado-generation')
+      .eq('active', true)
+      .single()
+
+    if (promptError) {
+      console.error('Error fetching prompt:', promptError)
+      // Fallback to default prompt if database prompt not found
+    }
+
     // Generate comunicado using the available data
     console.log('Generating comunicado with data:', { ecosystem, focus, date, milestone, email })
     console.log('Using reports:', availableReports.length, 'reports')
+    console.log('Using prompt:', promptData?.name || 'default')
     
     // Debug: Log what reports we're actually using
     availableReports.forEach((report, index) => {
@@ -139,7 +153,8 @@ export const handler: Handler = async (event) => {
       date,
       milestone,
       email,
-      reports: availableReports
+      reports: availableReports,
+      prompt: promptData
     })
     
     console.log('Generated comunicado length:', comunicado?.length || 0)
@@ -216,6 +231,7 @@ async function generatePublicComunicado(data: {
   milestone?: string
   email: string
   reports: any[]
+  prompt?: any
 }): Promise<string> {
   try {
     // Normalize fecha to DD/MM/AAAA format
@@ -257,7 +273,8 @@ async function generatePublicComunicado(data: {
     const reporteLocal = data.reports.find(r => r.ecosystem === data.ecosystem) || data.reports[0]
     const reporteComparado = data.reports.find(r => r.title.toLowerCase().includes('comparado')) || data.reports[1] || data.reports[0]
 
-    const systemPrompt = `Rol
+    // Use database prompt if available, otherwise fallback to default
+    const systemPrompt = data.prompt?.system_prompt || `Rol
 Eres un experto en comunicación estratégica especializado en redactar comunicados de prensa detallados y profesionales para ecosistemas de emprendimiento e innovación. Usa DOS fuentes principales:
 1) Reporte del ecosistema local específico (prioritario)
 2) Reporte GEIAL comparado (contexto regional y benchmarking)
@@ -295,7 +312,17 @@ Contacto: ${data.email}
 
 IMPORTANTE: Usa todos los datos específicos que encuentres en los reportes. Si hay nombres, cítalos. Si hay cifras, inclúyelas. Si hay eventos, descríbelos. El comunicado debe ser rico en información concreta y específica.`
 
-    const userPrompt = `Entradas (exactas)
+    // Use database user prompt template if available, otherwise fallback to default
+    const userPrompt = data.prompt?.user_prompt_template 
+      ? data.prompt.user_prompt_template
+          .replace(/\{\{ecosystem\}\}/g, data.ecosystem)
+          .replace(/\{\{focus\}\}/g, data.focus || 'No especificado')
+          .replace(/\{\{date\}\}/g, data.date || 'No especificado')
+          .replace(/\{\{milestone\}\}/g, data.milestone || 'No especificado')
+          .replace(/\{\{email\}\}/g, data.email)
+          .replace(/\{\{reporteLocal\}\}/g, JSON.stringify(reporteLocal, null, 2))
+          .replace(/\{\{reporteComparado\}\}/g, JSON.stringify(reporteComparado, null, 2))
+      : `Entradas (exactas)
 ecosistema: ${data.ecosystem}
 focus: ${data.focus || 'No especificado'}
 fecha: ${data.date || 'No especificado'}
@@ -340,13 +367,13 @@ Genera el comunicado siguiendo exactamente el formato especificado.`
     console.log('Making OpenAI API call...')
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: data.prompt?.model || 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
-      max_tokens: 1500,
-      temperature: 0.3
+      max_tokens: data.prompt?.max_tokens || 1500,
+      temperature: data.prompt?.temperature || 0.3
     })
 
     return response.choices[0]?.message?.content || 'Error generating comunicado'
