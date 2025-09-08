@@ -272,14 +272,6 @@ export default function AdminDashboard() {
               <h1 className="text-xl font-bold text-gray-900">Report Insight Express</h1>
             </div>
 
-            {/* Primary Action Button */}
-            <button 
-              onClick={() => setActiveTab('upload')}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-            >
-              <Upload className="h-4 w-4" />
-              <span>Subir Informes</span>
-            </button>
 
             {/* Navigation Links */}
             <div className="hidden md:flex items-center space-x-6">
