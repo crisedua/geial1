@@ -229,19 +229,19 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <a
-                href="/dashboard"
+                href="/admin"
                 className="btn-primary text-center"
               >
                 Panel de Control
               </a>
               <a
-                href="/upload"
+                href="/admin"
                 className="btn-secondary text-center"
               >
                 Subir Reportes
               </a>
               <a
-                href="/search"
+                href="/admin"
                 className="btn-secondary text-center"
               >
                 Buscar Documentos

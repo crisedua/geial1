@@ -10,6 +10,7 @@ import Search from './pages/Search'
 import Contacts from './pages/Contacts'
 import Settings from './pages/Settings'
 import Login from './pages/Login'
+import AdminDashboard from './pages/AdminDashboard'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <DatabaseProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="dashboard" element={<Dashboard />} />
