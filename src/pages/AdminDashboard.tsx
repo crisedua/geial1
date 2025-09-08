@@ -17,13 +17,32 @@ import {
   CheckCircle
 } from 'lucide-react'
 
+const ecosystems = [
+  'Argentina - Córdoba capital',
+  'Argentina - Rafaela',
+  'Argentina - Rio Cuarto',
+  'Argentina - Villa María',
+  'Brasil - San Pablo',
+  'Chile - Antofagasta',
+  'Chile - Concepción',
+  'Chile - La Serena - Coquimbo',
+  'Chile - Santiago',
+  'Chile - Valparaiso',
+  'Colombia - Barranquilla',
+  'Colombia - Bogotá',
+  'Colombia - Medellín',
+  'México - Ciudad de México',
+  'México - Guadalajara',
+  'Perú - Lima',
+  'Uruguay - Montevideo'
+]
+
 export default function AdminDashboard() {
-  const { getReports, getContacts, getComunicados, getEcosystems, uploadReport } = useDatabase()
+  const { getReports, getContacts, getComunicados, uploadReport } = useDatabase()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [reports, setReports] = useState<Report[]>([])
   const [contacts, setContacts] = useState<Contact[]>([])
   const [comunicados, setComunicados] = useState<Comunicado[]>([])
-  const [ecosystems, setEcosystems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   
@@ -40,16 +59,14 @@ export default function AdminDashboard() {
   const loadData = async () => {
     try {
       setLoading(true)
-      const [reportsData, contactsData, comunicadosData, ecosystemsData] = await Promise.all([
+      const [reportsData, contactsData, comunicadosData] = await Promise.all([
         getReports(),
         getContacts(),
-        getComunicados(),
-        getEcosystems()
+        getComunicados()
       ])
       setReports(reportsData)
       setContacts(contactsData)
       setComunicados(comunicadosData)
-      setEcosystems(ecosystemsData)
     } catch (err: any) {
       setError(err.message || 'Error loading data')
       console.error('Error loading admin dashboard data:', err)
@@ -60,7 +77,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     loadData()
-  }, [getReports, getContacts, getComunicados, getEcosystems])
+  }, [getReports, getContacts, getComunicados])
 
   // Upload handlers
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -547,8 +564,8 @@ export default function AdminDashboard() {
                   >
                     <option value="">Selecciona un ecosistema</option>
                     {ecosystems.map((eco) => (
-                      <option key={eco.id} value={eco.name}>
-                        {eco.name}
+                      <option key={eco} value={eco}>
+                        {eco}
                       </option>
                     ))}
                   </select>
