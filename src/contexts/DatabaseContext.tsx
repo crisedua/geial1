@@ -70,7 +70,8 @@ export function DatabaseProvider({ children }: { children: React.ReactNode }) {
           file_path: filePath,
           file_size: file.size,
           status: 'processing',
-          comparado
+          comparado,
+          user_id: null
         })
         .select()
         .single()

@@ -16,7 +16,7 @@ export interface Report {
   comparado: boolean
   created_at: string
   updated_at: string
-  user_id: string
+  user_id: string | null
   metadata?: {
     pages: number
     word_count: number
