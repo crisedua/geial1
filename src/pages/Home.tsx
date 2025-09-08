@@ -83,14 +83,22 @@ export default function Home() {
       {/* Header */}
       <div className="bg-primary-600 text-white py-8">
         <div className="max-w-4xl mx-auto px-4">
-          <div className="flex items-center space-x-3">
-            <FileText className="h-8 w-8" />
-            <div>
-              <h1 className="text-3xl font-bold">Report Insight Express</h1>
-              <p className="text-primary-100 mt-1">
-                Selecciona tu ecosistema y recibe informes personalizados (Fixed Version)
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <FileText className="h-8 w-8" />
+              <div>
+                <h1 className="text-3xl font-bold">Report Insight Express</h1>
+                <p className="text-primary-100 mt-1">
+                  Selecciona tu ecosistema y recibe informes personalizados (Fixed Version)
+                </p>
+              </div>
             </div>
+            <a
+              href="/admin"
+              className="text-white hover:text-primary-100 text-sm font-medium transition-colors"
+            >
+              Admin
+            </a>
           </div>
         </div>
       </div>
@@ -220,35 +228,6 @@ export default function Home() {
           </form>
         </div>
 
-        {/* Admin Section */}
-        <div className="mt-8">
-          <div className="bg-gray-50 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Sección Administrativa</h3>
-            <p className="text-gray-600 text-sm mb-4">
-              Accede al panel de administración para gestionar reportes, contactos y configuraciones.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <a
-                href="/admin"
-                className="btn-primary text-center"
-              >
-                Panel de Control
-              </a>
-              <a
-                href="/admin"
-                className="btn-secondary text-center"
-              >
-                Subir Reportes
-              </a>
-              <a
-                href="/admin"
-                className="btn-secondary text-center"
-              >
-                Buscar Documentos
-              </a>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   )

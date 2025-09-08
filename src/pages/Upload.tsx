@@ -85,7 +85,7 @@ export default function Upload() {
     setSuccess('')
 
     try {
-      await uploadReport(file, title, ecosystem, region)
+      await uploadReport(file, title, ecosystem)
       setSuccess('Report uploaded successfully! Processing will begin shortly.')
       setFile(null)
       setTitle('')
