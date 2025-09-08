@@ -358,7 +358,7 @@ export default function AdminDashboard() {
 
             {/* Navigation Links */}
             <div className="hidden md:flex items-center space-x-6">
-              {navigationItems.slice(1, 6).map((item) => (
+              {navigationItems.slice(1, 7).map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
