@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useAuth } from '../contexts/AuthContext'
 import { FileText, Send, Calendar, ChevronDown } from 'lucide-react'
 
 const ecosystems = [
@@ -23,7 +22,6 @@ const ecosystems = [
 ]
 
 export default function Home() {
-  const { user } = useAuth()
   const [formData, setFormData] = useState({
     ecosystem: '',
     focus: '',
