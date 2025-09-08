@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { 
   FileText, 
   Upload, 
@@ -6,7 +6,6 @@ import {
   Send, 
   MessageSquare, 
   BarChart3,
-  User,
   Settings,
   Search,
   Users
