@@ -13,7 +13,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 interface DatabaseContextType {
   // Reports
-  uploadReport: (file: File, title: string, ecosystem: string, region: string) => Promise<Report>
+  uploadReport: (file: File, title: string, ecosystem: string, region: string, comparado?: boolean) => Promise<Report>
   getReports: () => Promise<Report[]>
   getReport: (id: string) => Promise<Report | null>
   deleteReport: (id: string) => Promise<void>
@@ -47,7 +47,7 @@ const DatabaseContext = createContext<DatabaseContextType | undefined>(undefined
 
 export function DatabaseProvider({ children }: { children: React.ReactNode }) {
 
-  const uploadReport = async (file: File, title: string, ecosystem: string, region: string): Promise<Report> => {
+  const uploadReport = async (file: File, title: string, ecosystem: string, region: string, comparado = false): Promise<Report> => {
     try {
       // Upload file to Supabase Storage
       const fileExt = file.name.split('.').pop()
@@ -65,11 +65,12 @@ export function DatabaseProvider({ children }: { children: React.ReactNode }) {
         .from('reports')
         .insert({
           title,
-          ecosystem,
+          ecosystem: comparado ? 'Comparado' : ecosystem,
           region,
           file_path: filePath,
           file_size: file.size,
-          status: 'processing'
+          status: 'processing',
+          comparado
         })
         .select()
         .single()

@@ -13,6 +13,7 @@ export interface Report {
   file_path: string
   file_size: number
   status: 'processing' | 'completed' | 'failed'
+  comparado: boolean
   created_at: string
   updated_at: string
   user_id: string

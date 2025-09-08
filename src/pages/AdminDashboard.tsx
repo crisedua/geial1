@@ -32,6 +32,7 @@ export default function AdminDashboard() {
   const [uploadTitle, setUploadTitle] = useState('')
   const [uploadEcosystem, setUploadEcosystem] = useState('')
   const [uploadRegion, setUploadRegion] = useState('')
+  const [uploadComparado, setUploadComparado] = useState(false)
   const [uploadLoading, setUploadLoading] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const [uploadSuccess, setUploadSuccess] = useState('')
@@ -116,8 +117,12 @@ export default function AdminDashboard() {
 
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!uploadFile || !uploadTitle || !uploadEcosystem || !uploadRegion) {
-      setUploadError('Por favor completa todos los campos')
+    if (!uploadFile || !uploadTitle || !uploadRegion) {
+      setUploadError('Por favor completa todos los campos requeridos')
+      return
+    }
+    if (!uploadComparado && !uploadEcosystem) {
+      setUploadError('Por favor selecciona un ecosistema o marca como Comparado')
       return
     }
 
@@ -126,12 +131,13 @@ export default function AdminDashboard() {
     setUploadSuccess('')
 
     try {
-      await uploadReport(uploadFile, uploadTitle, uploadEcosystem, uploadRegion)
+      await uploadReport(uploadFile, uploadTitle, uploadEcosystem, uploadRegion, uploadComparado)
       setUploadSuccess('¡Informe subido exitosamente! El procesamiento comenzará en breve.')
       setUploadFile(null)
       setUploadTitle('')
       setUploadEcosystem('')
       setUploadRegion('')
+      setUploadComparado(false)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
@@ -543,8 +549,11 @@ export default function AdminDashboard() {
                   <select
                     value={uploadEcosystem}
                     onChange={(e) => setUploadEcosystem(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
+                    disabled={uploadComparado}
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                      uploadComparado ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+                    }`}
+                    required={!uploadComparado}
                   >
                     <option value="">Selecciona un ecosistema</option>
                     {ecosystems.map((eco) => (
@@ -567,6 +576,24 @@ export default function AdminDashboard() {
                     placeholder="Ingresa la región"
                     required
                   />
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="comparado"
+                    checked={uploadComparado}
+                    onChange={(e) => {
+                      setUploadComparado(e.target.checked)
+                      if (e.target.checked) {
+                        setUploadEcosystem('')
+                      }
+                    }}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="comparado" className="ml-2 block text-sm font-medium text-gray-700">
+                    Es un informe Comparado
+                  </label>
                 </div>
               </div>
 
