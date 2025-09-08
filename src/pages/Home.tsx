@@ -32,6 +32,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [generatedComunicado, setGeneratedComunicado] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,6 +44,7 @@ export default function Home() {
     setLoading(true)
     setError('')
     setSuccess('')
+    setGeneratedComunicado('')
 
     try {
       const response = await fetch('/api/generate-public-comunicado', {
@@ -57,7 +59,9 @@ export default function Home() {
         throw new Error(data.message || 'Error al generar el comunicado')
       }
 
-      setSuccess('Comunicado generado exitosamente. Se enviará a su email.')
+      // Display the generated comunicado on screen
+      setGeneratedComunicado(data.comunicado)
+      setSuccess('Comunicado generado exitosamente y guardado en la base de datos.')
       
       // Reset form
       setFormData({
@@ -227,6 +231,28 @@ export default function Home() {
             </button>
           </form>
         </div>
+
+        {/* Generated Comunicado Display */}
+        {generatedComunicado && (
+          <div className="mt-8">
+            <div className="bg-white rounded-lg shadow-lg p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Comunicado Generado</h2>
+              <div className="bg-gray-50 rounded-lg p-6">
+                <pre className="whitespace-pre-wrap text-gray-800 font-mono text-sm leading-relaxed">
+                  {generatedComunicado}
+                </pre>
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => setGeneratedComunicado('')}
+                  className="text-gray-500 hover:text-gray-700 text-sm"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

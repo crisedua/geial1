@@ -98,6 +98,23 @@ export const handler: Handler = async (event) => {
       reports: availableReports
     })
 
+    // Save the comunicado to the database
+    const { data: comunicadoData, error: comunicadoError } = await supabase
+      .from('comunicados')
+      .insert({
+        title: `Comunicado ${ecosystem} - ${new Date().toLocaleDateString()}`,
+        content: comunicado,
+        report_ids: availableReports.map(r => r.id),
+        status: 'draft',
+        user_id: null
+      })
+      .select()
+      .single()
+
+    if (comunicadoError) {
+      console.error('Error saving comunicado to database:', comunicadoError)
+    }
+
     // Save the request for tracking
     await supabase
       .from('public_requests')
@@ -143,55 +160,100 @@ async function generatePublicComunicado(data: {
   reports: any[]
 }): Promise<string> {
   try {
-    const systemPrompt = `Eres un experto en comunicación empresarial y análisis de ecosistemas de innovación. Tu tarea es crear un comunicado de prensa profesional basado en los datos disponibles del ecosistema.
+    // Normalize fecha to DD/MM/AAAA format
+    const formatDate = (dateStr: string): string => {
+      if (!dateStr) return 'No especificado'
+      
+      try {
+        let date: Date
+        if (dateStr.includes('/')) {
+          const parts = dateStr.split('/')
+          if (parts[0].length === 4) {
+            date = new Date(parts[0], parts[1] - 1, parts[2])
+          } else if (parts[1].length === 4) {
+            date = new Date(parts[2], parts[1] - 1, parts[0])
+          } else {
+            date = new Date(parts[2], parts[0] - 1, parts[1])
+          }
+        } else if (dateStr.includes('-')) {
+          date = new Date(dateStr)
+        } else {
+          return 'No especificado'
+        }
+        
+        if (isNaN(date.getTime())) return 'No especificado'
+        
+        return date.toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        })
+      } catch {
+        return 'No especificado'
+      }
+    }
 
-Instrucciones:
-1. Crea un comunicado de prensa profesional y atractivo
-2. Destaca los hallazgos más importantes del ecosistema
-3. Usa un tono profesional pero accesible
-4. Incluye datos y métricas relevantes cuando estén disponibles
-5. Estructura el comunicado con: título, subtítulo, párrafo introductorio, cuerpo principal, y conclusión
-6. Mantén el comunicado entre 400-600 palabras
-7. Usa lenguaje claro y evita jerga técnica excesiva
-8. Incluye llamadas a la acción cuando sea apropiado
-9. Si se proporciona un enfoque específico, enfócate en ese tema
-10. Si se proporciona una fecha o hito, incorpóralo en el contexto
+    const fechaFormateada = formatDate(data.date || '')
 
-Formato del comunicado:
-- Título llamativo relacionado con el ecosistema
-- Subtítulo explicativo
-- Párrafo introductorio con el contexto del ecosistema
-- Cuerpo principal con hallazgos clave
-- Conclusión con próximos pasos o implicaciones`
+    // Separate local and comparative reports
+    const reporteLocal = data.reports.find(r => r.ecosystem === data.ecosystem) || data.reports[0]
+    const reporteComparado = data.reports.find(r => r.title.toLowerCase().includes('comparado')) || data.reports[1] || data.reports[0]
 
-    const userPrompt = `Ecosistema: ${data.ecosystem}
-${data.focus ? `Enfoque: ${data.focus}` : ''}
-${data.date ? `Fecha: ${data.date}` : ''}
-${data.milestone ? `Hito: ${data.milestone}` : ''}
+    const systemPrompt = `Rol
+Eres un asistente especializado en redactar comunicados de prensa breves y ejecutivos usando DOS fuentes internas:
+Reporte del ecosistema local (prioritario) y 2) Reporte GEIAL comparado (contexto regional).
+No inventes información. Si un dato no está en los reportes, escribe "No especificado".
 
-Datos disponibles de reportes:
-${data.reports.map((report, index) => `
-Reporte ${index + 1}: ${report.title}
-Ecosistema: ${report.ecosystem}
-Región: ${report.region}
-Fecha: ${new Date(report.created_at).toLocaleDateString()}
+Reglas de uso de fuentes
+Primero extrae métricas, hallazgos y conclusiones del reporte_local (solo del ecosistema ${data.ecosystem}).
+Luego complementa con el reporte_comparado buscando solo información del mismo ecosistema y, si es útil, 1 dato regional/latam para contexto.
+Cada cifra o hecho relevante debe incluir cita entre paréntesis con página o sección: ej. (p. 52) o (sección "Resultados locales").
+Si hay contradicción entre reportes, prioriza el reporte_local y añade: (según Reporte GEIAL comparado, ver p. X).
 
-Contenido por secciones:
-${report.chunks ? report.chunks.map((chunk: any) => `
-- ${chunk.section_type}: ${chunk.content.slice(0, 200)}...
-`).join('') : 'Sin contenido disponible'}
-`).join('\n')}
+Estilo y límites
+Tono ejecutivo, claro y conciso.
+180–220 palabras total.
+Evita superlativos no sustentados.
+Sustituye muletillas/errores.
+Usa "No especificado" cuando falte cualquier dato clave (fecha/hora del hito, métricas, etc.).
 
-Por favor, genera un comunicado de prensa profesional basado en esta información del ecosistema ${data.ecosystem}.`
+Formato de salida (obligatorio)
+Devuelve solo texto, sin explicaciones, con este orden:
+[${data.ecosystem}, ${fechaFormateada} — TITULAR corto y directo]
+(1–12 palabras; opcional: subtítulo de 1 línea)
+Párrafo 1 — Qué es GEIAL y conclusión del ecosistema (2–3 oraciones):
+1 oración: definición muy breve de GEIAL (1 línea).
+1–2 oraciones: conclusión contundente sobre ${data.ecosystem} (fortaleza o reto principal) con cita (p. X).
+Párrafo 2 — Desarrollo del focus (2–4 oraciones):
+Explica el ${data.focus || 'análisis del ecosistema'} en este ecosistema.
+Incluye métricas/datos clave del reporte_local y, si procede, 1 contraste del comparado. Cita páginas.
+Si faltan métricas: "No especificado".
+Párrafo 3 — Invitación al hito / CTA (1–3 oraciones):
+Anuncia ${data.milestone || 'próximas actividades'} (qué, cuándo, quiénes). Si faltan datos: "No especificado".
+Llamado a la acción (asistir, inscribirse, descargar).
+Contacto de prensa: ${data.email} y "No especificado" para nombre/teléfono si no vienen.`
+
+    const userPrompt = `Entradas (exactas)
+ecosistema: ${data.ecosystem}
+focus: ${data.focus || 'No especificado'}
+fecha: ${data.date || 'No especificado'}
+hito: ${data.milestone || 'No especificado'}
+email_contacto: ${data.email}
+
+reporte_local (texto completo): ${JSON.stringify(reporteLocal, null, 2)}
+
+reporte_comparado (texto completo con todos los ecosistemas): ${JSON.stringify(reporteComparado, null, 2)}
+
+Genera el comunicado siguiendo exactamente el formato especificado.`
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
-      max_tokens: 1200,
-      temperature: 0.7
+      max_tokens: 800,
+      temperature: 0.3
     })
 
     return response.choices[0]?.message?.content || 'Error generating comunicado'
