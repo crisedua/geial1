@@ -30,7 +30,8 @@ export default function AdminDashboard() {
     getEcosystems, 
     createEcosystem, 
     updateEcosystem, 
-    deleteEcosystem 
+    deleteEcosystem,
+    deleteReport
   } = useDatabase()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [reports, setReports] = useState<Report[]>([])
@@ -158,6 +159,20 @@ export default function AdminDashboard() {
       setUploadError(err.message || 'Error al subir el informe')
     } finally {
       setUploadLoading(false)
+    }
+  }
+
+  // Report management functions
+  const handleDeleteReport = async (reportId: string, reportTitle: string) => {
+    if (window.confirm(`¿Estás seguro de que quieres eliminar "${reportTitle}"? Esta acción no se puede deshacer y también eliminará todos los datos y archivos asociados.`)) {
+      try {
+        await deleteReport(reportId)
+        setReports(reports.filter(r => r.id !== reportId))
+        alert('¡Informe eliminado exitosamente!')
+      } catch (error) {
+        console.error('Error deleting report:', error)
+        alert('Error al eliminar el informe. Por favor intenta de nuevo.')
+      }
     }
   }
 
@@ -468,11 +483,20 @@ export default function AdminDashboard() {
                         </p>
                       </div>
                     </div>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(report.status)}`}>
-                      {report.status === 'completed' ? 'Completado' : 
-                       report.status === 'processing' ? 'Procesando' : 
-                       report.status === 'failed' ? 'Falló' : report.status}
-                    </span>
+                    <div className="flex items-center space-x-3">
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(report.status)}`}>
+                        {report.status === 'completed' ? 'Completado' : 
+                         report.status === 'processing' ? 'Procesando' : 
+                         report.status === 'failed' ? 'Falló' : report.status}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteReport(report.id, report.title)}
+                        className="text-gray-400 hover:text-red-600 p-1 rounded-md hover:bg-red-50"
+                        title="Eliminar informe"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 ))
               )}

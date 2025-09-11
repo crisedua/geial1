@@ -123,6 +123,28 @@ export function DatabaseProvider({ children }: { children: React.ReactNode }) {
   }
 
   const deleteReport = async (id: string): Promise<void> => {
+    // First get the report to get the file path
+    const { data: report, error: fetchError } = await supabase
+      .from('reports')
+      .select('file_path')
+      .eq('id', id)
+      .single()
+
+    if (fetchError) throw fetchError
+
+    // Delete the file from storage if it exists
+    if (report?.file_path) {
+      const { error: storageError } = await supabase.storage
+        .from('reports')
+        .remove([report.file_path])
+      
+      // Log storage error but don't fail the delete operation
+      if (storageError) {
+        console.warn('Failed to delete file from storage:', storageError)
+      }
+    }
+
+    // Delete the report record (this will cascade delete chunks via foreign key)
     const { error } = await supabase
       .from('reports')
       .delete()

@@ -53,13 +53,15 @@ export default function Reports() {
     setFilteredReports(filtered)
   }, [reports, searchTerm, statusFilter, ecosystemFilter])
 
-  const handleDelete = async (reportId: string) => {
-    if (window.confirm('Are you sure you want to delete this report?')) {
+  const handleDelete = async (reportId: string, reportTitle: string) => {
+    if (window.confirm(`Are you sure you want to delete "${reportTitle}"? This action cannot be undone and will also delete all associated data and files.`)) {
       try {
         await deleteReport(reportId)
         setReports(reports.filter(r => r.id !== reportId))
+        alert('Report deleted successfully!')
       } catch (error) {
         console.error('Error deleting report:', error)
+        alert('Failed to delete report. Please try again.')
       }
     }
   }
@@ -198,7 +200,7 @@ export default function Reports() {
                     )}
                     
                     <button
-                      onClick={() => handleDelete(report.id)}
+                      onClick={() => handleDelete(report.id, report.title)}
                       className="text-gray-400 hover:text-red-600"
                       title="Delete report"
                     >
