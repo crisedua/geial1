@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FileText, Send, Calendar, ChevronDown } from 'lucide-react'
 import { useDatabase } from '../contexts/DatabaseContext'
 import { Ecosystem } from '../types'
@@ -18,6 +18,8 @@ export default function Home() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [generatedComunicado, setGeneratedComunicado] = useState('')
+  const [showCalendar, setShowCalendar] = useState(false)
+  const dateInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const loadEcosystems = async () => {
@@ -116,6 +118,20 @@ export default function Home() {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setFormData(prev => ({
+      ...prev,
+      date: value
+    }))
+  }
+
+  const handleCalendarClick = () => {
+    if (dateInputRef.current) {
+      dateInputRef.current.showPicker()
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -201,13 +217,20 @@ export default function Home() {
               </label>
               <div className="relative">
                 <input
-                  type="text"
+                  ref={dateInputRef}
+                  type="date"
                   value={formData.date}
-                  onChange={(e) => handleInputChange('date', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  onChange={handleDateChange}
+                  className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="mm/dd/yyyy"
                 />
-                <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <button
+                  type="button"
+                  onClick={handleCalendarClick}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                >
+                  <Calendar className="h-4 w-4" />
+                </button>
               </div>
             </div>
 
