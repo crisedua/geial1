@@ -18,7 +18,6 @@ export default function Home() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [generatedComunicado, setGeneratedComunicado] = useState('')
-  const [showCalendar, setShowCalendar] = useState(false)
   const dateInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
