@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { FileText, Send, Calendar, ChevronDown } from 'lucide-react'
+import { FileText, Send, Calendar, ChevronDown, Download } from 'lucide-react'
 import { useDatabase } from '../contexts/DatabaseContext'
 import { Ecosystem } from '../types'
 
@@ -91,21 +91,9 @@ export default function Home() {
       
       setSuccess('Comunicado generado exitosamente y guardado en la base de datos.')
       console.log('Success message set')
-      
-      // Reset form
-      setFormData({
-        ecosystem: '',
-        focus: '',
-        date: '',
-        milestone: '',
-        email: ''
-      })
-      console.log('Form data reset')
     } catch (err: any) {
-      console.error('Error in handleSubmit:', err)
-      console.error('Error message:', err.message)
-      console.error('Error stack:', err.stack)
-      setError(err.message || 'Error al generar el comunicado. Intente nuevamente.')
+      console.error('Error generating comunicado:', err)
+      setError(err.message || 'Error al generar el comunicado')
     } finally {
       setLoading(false)
       console.log('Loading state set to false')
@@ -131,6 +119,24 @@ export default function Home() {
     }
   }
 
+  const downloadComunicado = () => {
+    if (!generatedComunicado) return
+
+    const timestamp = new Date().toISOString().split('T')[0]
+    const filename = `comunicado-${formData.ecosystem}-${timestamp}.txt`
+    
+    const blob = new Blob([generatedComunicado], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -140,7 +146,7 @@ export default function Home() {
             <div className="flex items-center space-x-3">
               <FileText className="h-8 w-8" />
               <div>
-                <h1 className="text-3xl font-bold">Report Insight Express</h1>
+                <h1 className="text-3xl font-bold">GeneraciÛn de Comunicados by IAcelera</h1>
                 <p className="text-primary-100 mt-1">
                   Selecciona tu ecosistema y recibe informes personalizados
                 </p>
@@ -163,7 +169,6 @@ export default function Home() {
           <p className="text-gray-600 mb-6">
             Complete los siguientes datos para recibir su informe y comunicado de prensa
           </p>
-
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -191,7 +196,7 @@ export default function Home() {
                 <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                El sistema combinar√° datos del comparado + informe espec√≠fico del ecosistema (si est√° disponible)
+                El sistema combinar· datos del comparado + informe especÌfico del ecosistema (si est· disponible)
               </p>
             </div>
 
@@ -296,7 +301,16 @@ export default function Home() {
         {generatedComunicado && (
           <div className="mt-8">
             <div className="bg-white rounded-lg shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Comunicado Generado</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">Comunicado Generado</h2>
+                <button
+                  onClick={downloadComunicado}
+                  className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                >
+                  <Download className="h-4 w-4" />
+                  <span>Descargar</span>
+                </button>
+              </div>
               <div className="bg-gray-50 rounded-lg p-6">
                 <pre className="whitespace-pre-wrap text-gray-800 font-mono text-sm leading-relaxed">
                   {generatedComunicado}
