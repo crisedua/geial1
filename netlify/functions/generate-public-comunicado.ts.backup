@@ -9,7 +9,7 @@ const openaiApiKey = process.env.OPENAI_API_KEY!
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 const openai = new OpenAI({ apiKey: openaiApiKey })
 
-interface GeneratePublicComunicadoRequest {
+interface PublicComunicadoRequest {
   ecosystem: string
   focus?: string
   date?: string
@@ -19,9 +19,9 @@ interface GeneratePublicComunicadoRequest {
 
 export const handler: Handler = async (event) => {
   console.log('=== API FUNCTION DEBUG START ===')
+  console.log('HTTP Method:', event.httpMethod)
   console.log('Event body:', event.body)
-  console.log('Event method:', event.httpMethod)
-
+  
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -30,9 +30,11 @@ export const handler: Handler = async (event) => {
   }
 
   try {
-    const { ecosystem, focus, date, milestone, email }: GeneratePublicComunicadoRequest = JSON.parse(event.body || '{}')
-
-    console.log('Parsed data:', { ecosystem, focus, date, milestone, email })
+    const requestData = JSON.parse(event.body || '{}')
+    console.log('Parsed request data:', requestData)
+    
+    const { ecosystem, focus, date, milestone, email }: PublicComunicadoRequest = requestData
+    console.log('Extracted fields:', { ecosystem, focus, date, milestone, email })
 
     if (!ecosystem || !email) {
       console.log('Validation failed - missing required fields')
@@ -102,8 +104,15 @@ export const handler: Handler = async (event) => {
 
     const availableReports = reports || generalReports
 
-    // MODIFIED LOGIC: Generate comunicado even without reports
-    console.log('Available reports:', availableReports.length)
+    if (availableReports.length === 0) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ 
+          error: 'No reports available',
+          message: 'No hay reportes disponibles para generar el comunicado'
+        })
+      }
+    }
 
     // Get the active prompt from database
     const { data: promptData, error: promptError } = await supabase
@@ -118,7 +127,7 @@ export const handler: Handler = async (event) => {
       // Fallback to default prompt if database prompt not found
     }
 
-    // Generate comunicado using the available data (even if no reports)
+    // Generate comunicado using the available data
     console.log('Generating comunicado with data:', { ecosystem, focus, date, milestone, email })
     console.log('Using reports:', availableReports.length, 'reports')
     console.log('Using prompt:', promptData?.name || 'default')
@@ -187,35 +196,29 @@ export const handler: Handler = async (event) => {
     const responseData = {
       success: true,
       comunicado,
+      ecosystem,
       reportsUsed: availableReports.length,
-      ecosystemInfo: ecosystem
+      message: 'Comunicado generado exitosamente'
     }
-
-    console.log('Sending response with comunicado length:', comunicado?.length || 0)
+    
+    console.log('Returning response data:', {
+      ...responseData,
+      comunicado: responseData.comunicado?.substring(0, 100) + '...'
+    })
     console.log('=== API FUNCTION DEBUG END ===')
 
     return {
       statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS'
-      },
       body: JSON.stringify(responseData)
     }
 
   } catch (error: any) {
-    console.error('Error in generate-public-comunicado:', error)
-    console.error('Error stack:', error.stack)
-    console.log('=== API FUNCTION DEBUG END (ERROR) ===')
-    
+    console.error('Error generating public comunicado:', error)
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: 'Internal server error',
-        message: error.message,
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        error: 'Failed to generate comunicado',
+        details: error.message
       })
     }
   }
@@ -266,70 +269,116 @@ async function generatePublicComunicado(data: {
 
     const fechaFormateada = formatDate(data.date || '')
 
-    // MODIFIED: Handle case when no reports are available
-    let reporteLocal = null
-    let reporteComparado = null
-    
-    if (data.reports && data.reports.length > 0) {
-      // Separate local and comparative reports
-      reporteLocal = data.reports.find(r => r.ecosystem === data.ecosystem) || data.reports[0]
-      reporteComparado = data.reports.find(r => r.title.toLowerCase().includes('comparado')) || data.reports[1] || data.reports[0]
-    }
+    // Separate local and comparative reports
+    const reporteLocal = data.reports.find(r => r.ecosystem === data.ecosystem) || data.reports[0]
+    const reporteComparado = data.reports.find(r => r.title.toLowerCase().includes('comparado')) || data.reports[1] || data.reports[0]
 
     // Use database prompt if available, otherwise fallback to default
-    let systemPrompt, userPrompt
+    const systemPrompt = data.prompt?.system_prompt || `Rol
+Eres un experto en comunicación estratégica especializado en redactar comunicados de prensa detallados y profesionales para ecosistemas de emprendimiento e innovación. Usa DOS fuentes principales:
+1) Reporte del ecosistema local específico (prioritario)
+2) Reporte GEIAL comparado (contexto regional y benchmarking)
 
-    if (data.prompt) {
-      systemPrompt = data.prompt.system_prompt
-      userPrompt = data.prompt.user_prompt_template
-        ?.replace(/\{\{ecosystem\}\}/g, data.ecosystem)
-        ?.replace(/\{\{focus\}\}/g, data.focus || 'No especificado')
-        ?.replace(/\{\{date\}\}/g, data.date || 'No especificado')
-        ?.replace(/\{\{milestone\}\}/g, data.milestone || 'No especificado')
-        ?.replace(/\{\{email\}\}/g, data.email)
-        ?.replace(/\{\{reporteLocal\}\}/g, reporteLocal ? JSON.stringify(reporteLocal, null, 2) : 'No hay reporte específico disponible para este ecosistema')
-        ?.replace(/\{\{reporteComparado\}\}/g, reporteComparado ? JSON.stringify(reporteComparado, null, 2) : 'No hay reporte comparado disponible')
+Extrae TODA la información relevante de los reportes. No inventes datos, pero sí extrae y presenta todos los datos, métricas, eventos, iniciativas, nombres, citas y detalles específicos que encuentres.
+
+Reglas de extracción de datos
+- Busca y extrae TODOS los datos específicos: métricas, rankings, porcentajes, números, fechas, eventos
+- Incluye nombres de personas, organizaciones, programas e iniciativas mencionados
+- Extrae citas textuales y declaraciones importantes
+- Busca información sobre: MIT REAP, eventos específicos, mediciones GEIAL, proyecciones futuras
+- Identifica colaboraciones, alianzas estratégicas y proyectos clave
+- Encuentra datos comparativos con otros ecosistemas latinoamericanos
+
+Estructura del comunicado (400-600 palabras)
+TITULAR: [${data.ecosystem} + tema principal del ${data.focus || 'ecosistema'}]
+
+PÁRRAFO 1 - Introducción y contexto GEIAL (80-100 palabras):
+Explica qué es GEIAL y su relevancia. Presenta la conclusión principal sobre ${data.ecosystem} con datos específicos del reporte.
+
+PÁRRAFO 2 - Desarrollo del enfoque principal (120-150 palabras):
+Desarrolla detalladamente el tema del ${data.focus || 'análisis del ecosistema'}.
+Incluye todas las métricas, datos cuantitativos, rankings y comparaciones encontrados.
+Menciona programas específicos, iniciativas y colaboraciones.
+
+PÁRRAFO 3 - Eventos destacados y actividades (100-120 palabras):
+Describe eventos específicos mencionados en los reportes.
+Incluye fechas, participantes, objetivos y resultados esperados.
+Menciona colaboraciones institucionales y alianzas estratégicas.
+
+PÁRRAFO 4 - Proyecciones y llamado a la acción (80-100 palabras):
+Presenta las proyecciones y planes futuros encontrados en los reportes.
+Anuncia el ${data.milestone || 'próximo hito'} con todos los detalles disponibles.
+Contacto: ${data.email}
+
+IMPORTANTE: Usa todos los datos específicos que encuentres en los reportes. Si hay nombres, cítalos. Si hay cifras, inclúyelas. Si hay eventos, descríbelos. El comunicado debe ser rico en información concreta y específica.`
+
+    // Use database user prompt template if available, otherwise fallback to default
+    const userPrompt = data.prompt?.user_prompt_template 
+      ? data.prompt.user_prompt_template
+          .replace(/\{\{ecosystem\}\}/g, data.ecosystem)
+          .replace(/\{\{focus\}\}/g, data.focus || 'No especificado')
+          .replace(/\{\{date\}\}/g, data.date || 'No especificado')
+          .replace(/\{\{milestone\}\}/g, data.milestone || 'No especificado')
+          .replace(/\{\{email\}\}/g, data.email)
+          .replace(/\{\{reporteLocal\}\}/g, JSON.stringify(reporteLocal, null, 2))
+          .replace(/\{\{reporteComparado\}\}/g, JSON.stringify(reporteComparado, null, 2))
+      : `Entradas (exactas)
+ecosistema: ${data.ecosystem}
+focus: ${data.focus || 'No especificado'}
+fecha: ${data.date || 'No especificado'}
+hito: ${data.milestone || 'No especificado'}
+email_contacto: ${data.email}
+
+reporte_local (texto completo): ${JSON.stringify(reporteLocal, null, 2)}
+
+reporte_comparado (texto completo con todos los ecosistemas): ${JSON.stringify(reporteComparado, null, 2)}
+
+Genera el comunicado siguiendo exactamente el formato especificado.`
+
+    console.log('=== AI PROMPT DEBUG ===')
+    console.log('System prompt length:', systemPrompt.length)
+    console.log('User prompt length:', userPrompt.length)
+    console.log('reporteLocal data:', {
+      id: reporteLocal?.id,
+      title: reporteLocal?.title,
+      ecosystem: reporteLocal?.ecosystem,
+      chunks_count: reporteLocal?.chunks?.length || 0
+    })
+    console.log('reporteComparado data:', {
+      id: reporteComparado?.id,
+      title: reporteComparado?.title,
+      ecosystem: reporteComparado?.ecosystem,
+      chunks_count: reporteComparado?.chunks?.length || 0
+    })
+    
+    if (reporteLocal?.chunks && reporteLocal.chunks.length > 0) {
+      console.log('reporteLocal first chunk:', reporteLocal.chunks[0].content?.substring(0, 200) + '...')
     } else {
-      // Fallback to basic prompt when no database prompt is available
-      systemPrompt = `Eres un experto en comunicación estratégica especializado en redactar comunicados de prensa para ecosistemas de emprendimiento e innovación.
-
-Genera un comunicado de prensa profesional y atractivo basado en la información proporcionada sobre el ecosistema ${data.ecosystem}.
-
-Si no hay reportes específicos disponibles, crea un comunicado general que destaque:
-1. La importancia del ecosistema ${data.ecosystem} en Latinoamérica
-2. Las tendencias actuales en este sector
-3. La relevancia del enfoque mencionado (si se proporciona)
-4. El potencial de crecimiento y desarrollo
-
-El comunicado debe ser profesional, informativo y de aproximadamente 300-400 palabras.`
-
-      userPrompt = `Genera un comunicado de prensa para:
-- Ecosistema: ${data.ecosystem}
-- Enfoque: ${data.focus || 'Desarrollo del ecosistema'}
-- Fecha: ${fechaFormateada}
-- Hito/Evento: ${data.milestone || 'Análisis del ecosistema'}
-- Contacto: ${data.email}
-
-${reporteLocal ? `Datos del reporte local: ${JSON.stringify(reporteLocal, null, 2)}` : 'No hay reporte específico disponible - usa información general del ecosistema'}
-
-${reporteComparado ? `Datos del reporte comparado: ${JSON.stringify(reporteComparado, null, 2)}` : 'No hay reporte comparado disponible - enfócate en las características propias del ecosistema'}
-
-Crea un comunicado profesional que destaque la importancia de este ecosistema en el contexto latinoamericano.`
+      console.log('reporteLocal has no chunks!')
     }
+    
+    if (reporteComparado?.chunks && reporteComparado.chunks.length > 0) {
+      console.log('reporteComparado first chunk:', reporteComparado.chunks[0].content?.substring(0, 200) + '...')
+    } else {
+      console.log('reporteComparado has no chunks!')
+    }
+    console.log('=== END AI PROMPT DEBUG ===')
+    
+    console.log('Making OpenAI API call...')
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: data.prompt?.model || 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
-      max_tokens: 1500,
-      temperature: 0.3
+      max_tokens: data.prompt?.max_tokens || 1500,
+      temperature: data.prompt?.temperature || 0.3
     })
 
-    return response.choices[0]?.message?.content || 'Error generando comunicado'
+    return response.choices[0]?.message?.content || 'Error generating comunicado'
   } catch (error) {
-    console.error('Error generating comunicado:', error)
+    console.error('Error generating public comunicado:', error)
     throw error
   }
 }
