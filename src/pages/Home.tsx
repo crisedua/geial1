@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+ï»¿import { useState, useEffect, useRef } from 'react'
 import { FileText, Send, Calendar, ChevronDown, Download } from 'lucide-react'
 import { useDatabase } from '../contexts/DatabaseContext'
 import { Ecosystem } from '../types'
@@ -146,7 +146,7 @@ export default function Home() {
             <div className="flex items-center space-x-3">
               <FileText className="h-8 w-8" />
               <div>
-                <h1 className="text-3xl font-bold">Generación de Comunicados by IAcelera</h1>
+                <h1 className="text-3xl font-bold">GeneraciÃ³n de Comunicados by IAcelera</h1>
                 <p className="text-primary-100 mt-1">
                   Selecciona tu ecosistema y recibe informes personalizados
                 </p>
@@ -196,7 +196,7 @@ export default function Home() {
                 <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                El sistema combinará datos del comparado + informe específico del ecosistema (si está disponible)
+                El sistema combinarï¿½ datos del comparado + informe especï¿½fico del ecosistema (si estï¿½ disponible)
               </p>
             </div>
 
@@ -332,3 +332,4 @@ export default function Home() {
     </div>
   )
 }
+
