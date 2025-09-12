@@ -1,0 +1,5 @@
+[33m9b10d65[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix accent encoding issue in title - Generación
+[33m3625582[m Update GEIAL definition to 'Grupo de Ecosistemas Inteligentes de LatinoAmerica' and improve comunicado generation logic
+[33m40dc597[m Clean up temporary files
+[33m7e261be[m Add download functionality and change title to 'Generación de Comunicados by IAcelera'
+[33ma4904f2[m Clean up temporary files and prepare for DOM error fixes

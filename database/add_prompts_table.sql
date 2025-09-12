@@ -36,7 +36,7 @@ Estructura del comunicado (400-600 palabras)
 TITULAR: [{{ecosystem}} + tema principal del {{focus}}]
 
 PÁRRAFO 1 - Introducción y contexto GEIAL (80-100 palabras):
-Explica qué es GEIAL y su relevancia. Presenta la conclusión principal sobre {{ecosystem}} con datos específicos del reporte.
+Explica qué es GEIAL (Grupo de Ecosistemas Inteligentes de LatinoAmerica) y su relevancia. Presenta la conclusión principal sobre {{ecosystem}} con datos específicos del reporte.
 
 PÁRRAFO 2 - Desarrollo del enfoque principal (120-150 palabras):
 Desarrolla detalladamente el tema del {{focus}}.

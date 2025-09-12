@@ -295,8 +295,10 @@ async function generatePublicComunicado(data: {
 
 Genera un comunicado de prensa profesional y atractivo basado en la información proporcionada sobre el ecosistema ${data.ecosystem}.
 
+GEIAL (Grupo de Ecosistemas Inteligentes de LatinoAmerica) es una iniciativa que evalúa y fortalece los ecosistemas de emprendimiento e innovación en América Latina.
+
 Si no hay reportes específicos disponibles, crea un comunicado general que destaque:
-1. La importancia del ecosistema ${data.ecosystem} en Latinoamérica
+1. La importancia del ecosistema ${data.ecosystem} en el contexto de GEIAL y Latinoamérica
 2. Las tendencias actuales en este sector
 3. La relevancia del enfoque mencionado (si se proporciona)
 4. El potencial de crecimiento y desarrollo
@@ -314,7 +316,7 @@ ${reporteLocal ? `Datos del reporte local: ${JSON.stringify(reporteLocal, null, 
 
 ${reporteComparado ? `Datos del reporte comparado: ${JSON.stringify(reporteComparado, null, 2)}` : 'No hay reporte comparado disponible - enfócate en las características propias del ecosistema'}
 
-Crea un comunicado profesional que destaque la importancia de este ecosistema en el contexto latinoamericano.`
+Crea un comunicado profesional que destaque la importancia de este ecosistema en el contexto de GEIAL (Grupo de Ecosistemas Inteligentes de LatinoAmerica) y el desarrollo regional.`
     }
 
     const response = await openai.chat.completions.create({
