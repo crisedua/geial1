@@ -332,6 +332,15 @@ async function generatePublicComunicado(data: {
 
     if (data.prompt) {
       systemPrompt = data.prompt.system_prompt
+      console.log('Database prompt found:', {
+        name: data.prompt.name,
+        systemPromptLength: data.prompt.system_prompt?.length,
+        userPromptLength: data.prompt.user_prompt_template?.length,
+        hasTestimonialPlaceholder: data.prompt.user_prompt_template?.includes('{{testimonial}}'),
+        hasGeialPlaceholder: data.prompt.user_prompt_template?.includes('{{GEIAL}}'),
+        hasDescGeialPlaceholder: data.prompt.user_prompt_template?.includes('{{DESC_GEIAL}}')
+      })
+      
       userPrompt = data.prompt.user_prompt_template
         ?.replace(/\{\{ecosystem\}\}/g, data.ecosystem)
         ?.replace(/\{\{focus\}\}/g, data.focus || 'No especificado')
@@ -343,6 +352,9 @@ async function generatePublicComunicado(data: {
         ?.replace(/\{\{DESC_GEIAL\}\}/g, 'GEIAL, es el Grupo de Ecosistemas Inteligentes de América Latina, la primera comunidad de ecosistemas de la región que se mide, compara, monitorea y aprende de las experiencias y buenas prácticas de sus miembros y comparte por esa vía información y contactos valiosos. La integran más de 140 actores de más de 50 organizaciones y su plataforma de datos e indicadores, construida en los años 2023-2024, abarca 25 ecosistemas. GEIAL ofrece una brújula para orientar la formulación de mejores estrategias y agendas accionables para el desarrollo de los ecosistemas de emprendimiento dinámico e innovador en la región, aportando evidencias e inteligencia sistémica a los distintos actores, incluyendo a las gobernanzas y a los gobiernos.')
         ?.replace(/\{\{reporteLocal\}\}/g, reporteLocal ? JSON.stringify(reporteLocal, null, 2) : 'No hay reporte específico disponible para este ecosistema')
         ?.replace(/\{\{reporteComparado\}\}/g, reporteComparado ? JSON.stringify(reporteComparado, null, 2) : 'No hay reporte comparado disponible')
+      
+      console.log('Final user prompt after replacements (first 500 chars):', userPrompt?.substring(0, 500))
+      console.log('Final user prompt (last 200 chars):', userPrompt?.substring(userPrompt.length - 200))
     } else {
       // Fallback to basic prompt when no database prompt is available
       systemPrompt = `Eres un experto en comunicación estratégica especializado en redactar comunicados de prensa para ecosistemas de emprendimiento e innovación.
