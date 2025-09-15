@@ -403,7 +403,32 @@ ${data.testimonial ? `- Incluye el siguiente testimonio cuando sea relevante: "$
       temperature: 0.3
     })
 
-    return response.choices[0]?.message?.content || 'Error generando comunicado'
+    let comunicado = response.choices[0]?.message?.content || 'Error generando comunicado'
+    
+    // Post-process to ensure testimonial and GEIAL description are included
+    const geialDescription = '\n\nGEIAL, es el Grupo de Ecosistemas Inteligentes de América Latina, la primera comunidad de ecosistemas de la región que se mide, compara, monitorea y aprende de las experiencias y buenas prácticas de sus miembros y comparte por esa vía información y contactos valiosos. La integran más de 140 actores de más de 50 organizaciones y su plataforma de datos e indicadores, construida en los años 2023-2024, abarca 25 ecosistemas. GEIAL ofrece una brújula para orientar la formulación de mejores estrategias y agendas accionables para el desarrollo de los ecosistemas de emprendimiento dinámico e innovador en la región, aportando evidencias e inteligencia sistémica a los distintos actores, incluyendo a las gobernanzas y a los gobiernos.'
+    
+    // Add testimonial if provided and not already in the comunicado
+    if (data.testimonial && !comunicado.includes(data.testimonial)) {
+      // Insert testimonial before the contact information
+      const contactIndex = comunicado.lastIndexOf('Contacto:')
+      if (contactIndex !== -1) {
+        const beforeContact = comunicado.substring(0, contactIndex)
+        const contactPart = comunicado.substring(contactIndex)
+        comunicado = beforeContact + `\n\n"${data.testimonial}"\n\n` + contactPart
+      }
+    }
+    
+    // Add GEIAL description if not already present
+    if (!comunicado.includes('GEIAL, es el Grupo de Ecosistemas Inteligentes de América Latina')) {
+      comunicado += geialDescription
+    }
+    
+    console.log('Post-processed comunicado length:', comunicado.length)
+    console.log('Contains testimonial:', data.testimonial ? comunicado.includes(data.testimonial) : 'N/A')
+    console.log('Contains GEIAL description:', comunicado.includes('GEIAL, es el Grupo de Ecosistemas Inteligentes de América Latina'))
+    
+    return comunicado
   } catch (error) {
     console.error('Error generating comunicado:', error)
     throw error
