@@ -213,9 +213,6 @@ export default function Home() {
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                El sistema combinar� datos del comparado + informe espec�fico del ecosistema (si est� disponible)
-              </p>
             </div>
 
             {/* Focus Field */}
