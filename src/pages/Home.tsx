@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useRef } from 'react'
-import { FileText, Send, Calendar, ChevronDown, Download, Info } from 'lucide-react'
+import { FileText, Send, Calendar, ChevronDown, Download } from 'lucide-react'
 import { useDatabase } from '../contexts/DatabaseContext'
 import { Ecosystem } from '../types'
 
@@ -190,17 +190,11 @@ export default function Home() {
             {/* Ecosystem Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <div className="flex items-center gap-2">
-                  Ecosistema participante de GEIAL *
-                  <div className="relative group">
-                    <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                      Selecciona el ecosistema al que debe hacer referencia el comunicado de prensa.
-                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
-                    </div>
-                  </div>
-                </div>
+                Ecosistema participante de GEIAL *
               </label>
+              <p className="text-xs text-gray-500 mb-3">
+                Selecciona el ecosistema al que debe hacer referencia el comunicado de prensa.
+              </p>
               <div className="relative">
                 <select
                   value={formData.ecosystem}
@@ -227,17 +221,11 @@ export default function Home() {
             {/* Focus Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <div className="flex items-center gap-2">
-                  Foco del comunicado
-                  <div className="relative group">
-                    <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                      Indica el eje central del comunicado (por ejemplo: una fuerza dinamizadora, una dimensión del reporte u otro aspecto relevante).
-                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
-                    </div>
-                  </div>
-                </div>
+                Foco del comunicado
               </label>
+              <p className="text-xs text-gray-500 mb-3">
+                Indica el eje central del comunicado (por ejemplo: una fuerza dinamizadora, una dimensión del reporte u otro aspecto relevante).
+              </p>
               <input
                 type="text"
                 value={formData.focus}
@@ -250,17 +238,11 @@ export default function Home() {
             {/* Date Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <div className="flex items-center gap-2">
-                  Fecha de Comunicación
-                  <div className="relative group">
-                    <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                      Especifica la fecha que debe aparecer en el comunicado.
-                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
-                    </div>
-                  </div>
-                </div>
+                Fecha de Comunicación
               </label>
+              <p className="text-xs text-gray-500 mb-3">
+                Especifica la fecha que debe aparecer en el comunicado.
+              </p>
               <div className="relative">
                 <input
                   ref={dateInputRef}
@@ -283,17 +265,11 @@ export default function Home() {
             {/* Milestone Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <div className="flex items-center gap-2">
-                  Hito a destacar
-                  <div className="relative group">
-                    <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                      Señala la actividad, evento o situación que deseas relevar (por ejemplo: lanzamiento del reporte, evento de difusión, logro destacado, etc.).
-                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
-                    </div>
-                  </div>
-                </div>
+                Hito a destacar
               </label>
+              <p className="text-xs text-gray-500 mb-3">
+                Señala la actividad, evento o situación que deseas relevar (por ejemplo: lanzamiento del reporte, evento de difusión, logro destacado, etc.).
+              </p>
               <input
                 type="text"
                 value={formData.milestone}
@@ -306,17 +282,11 @@ export default function Home() {
             {/* Email Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <div className="flex items-center gap-2">
-                  Correo electrónico de contacto
-                  <div className="relative group">
-                    <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                      Ingresa el correo electrónico del profesional que solicita el comunicado.
-                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
-                    </div>
-                  </div>
-                </div>
+                Correo electrónico de contacto
               </label>
+              <p className="text-xs text-gray-500 mb-3">
+                Ingresa el correo electrónico del profesional que solicita el comunicado.
+              </p>
               <input
                 type="email"
                 value={formData.email}
@@ -330,18 +300,11 @@ export default function Home() {
             {/* Testimonial Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <div className="flex items-center gap-2">
-                  Testimonio del ecosistema (opcional)
-                  <div className="relative group">
-                    <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10 max-w-xs">
-                      Puedes añadir una cuña o declaración de un actor relevante del ecosistema.<br/>
-                      En caso de no contar con ella, la aplicación dejará un espacio reservado en el formato de salida para que pueda agregarse manualmente.
-                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
-                    </div>
-                  </div>
-                </div>
+                Testimonio del ecosistema (opcional)
               </label>
+              <p className="text-xs text-gray-500 mb-3">
+                Puedes añadir una cuña o declaración de un actor relevante del ecosistema. En caso de no contar con ella, la aplicación dejará un espacio reservado en el formato de salida para que pueda agregarse manualmente.
+              </p>
               <textarea
                 value={formData.testimonial}
                 onChange={(e) => handleInputChange('testimonial', e.target.value)}

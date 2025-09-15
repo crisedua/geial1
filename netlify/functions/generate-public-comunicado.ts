@@ -68,12 +68,13 @@ export const handler: Handler = async (event) => {
       }
     }
 
-    // If no reports found for the specific ecosystem, get general reports
+    // If no reports found for the specific ecosystem, get comparado reports first, then general reports
     let generalReports = []
     if (!reports || reports.length === 0) {
-      console.log('No specific ecosystem reports found, trying general reports...')
+      console.log('No specific ecosystem reports found, trying comparado reports...')
       
-      const { data: generalData } = await supabase
+      // First try to get comparado reports (these contain data for all ecosystems)
+      const { data: comparadoData } = await supabase
         .from('reports')
         .select(`
           *,
@@ -82,18 +83,40 @@ export const handler: Handler = async (event) => {
             section_type
           )
         `)
+        .or('title.ilike.%comparado%,title.ilike.%comparativo%,title.ilike.%general%')
         .in('status', ['completed', 'processing'])
         .order('created_at', { ascending: false })
-        .limit(3)
+        .limit(2)
       
-      generalReports = generalData || []
-      console.log('Found general reports:', generalReports.length)
+      if (comparadoData && comparadoData.length > 0) {
+        generalReports = comparadoData
+        console.log('Found comparado reports:', generalReports.length)
+      } else {
+        // If no comparado reports, get any available reports
+        console.log('No comparado reports found, trying any available reports...')
+        
+        const { data: anyData } = await supabase
+          .from('reports')
+          .select(`
+            *,
+            chunks (
+              content,
+              section_type
+            )
+          `)
+          .in('status', ['completed', 'processing'])
+          .order('created_at', { ascending: false })
+          .limit(3)
+        
+        generalReports = anyData || []
+        console.log('Found general reports:', generalReports.length)
+      }
       
       // If still no reports, check what reports exist in the database
       if (generalReports.length === 0) {
         const { data: allReports } = await supabase
           .from('reports')
-          .select('id, title, ecosystem, status')
+          .select('id, title, ecosystem, status, comparado')
           .order('created_at', { ascending: false })
           .limit(10)
         
@@ -276,8 +299,32 @@ async function generatePublicComunicado(data: {
     
     if (data.reports && data.reports.length > 0) {
       // Separate local and comparative reports
-      reporteLocal = data.reports.find(r => r.ecosystem === data.ecosystem) || data.reports[0]
-      reporteComparado = data.reports.find(r => r.title.toLowerCase().includes('comparado')) || data.reports[1] || data.reports[0]
+      reporteLocal = data.reports.find(r => r.ecosystem === data.ecosystem)
+      
+      // Prioritize comparado reports - look for various patterns
+      reporteComparado = data.reports.find(r => 
+        r.title.toLowerCase().includes('comparado') ||
+        r.title.toLowerCase().includes('comparativo') ||
+        r.title.toLowerCase().includes('general') ||
+        r.comparado === true
+      )
+      
+      // If no comparado report found, use the first available report
+      if (!reporteComparado) {
+        reporteComparado = data.reports[0]
+      }
+      
+      // If no local report found, use comparado as local too
+      if (!reporteLocal) {
+        reporteLocal = reporteComparado
+      }
+      
+      console.log('Report selection:', {
+        ecosystem: data.ecosystem,
+        localReport: reporteLocal?.title || 'None',
+        comparadoReport: reporteComparado?.title || 'None',
+        totalReports: data.reports.length
+      })
     }
 
     // Use database prompt if available, otherwise fallback to default
@@ -302,6 +349,8 @@ Genera un comunicado de prensa profesional y atractivo basado en la información
 
 GEIAL (Grupo de Ecosistemas Inteligentes de LatinoAmerica) es una iniciativa que evalúa y fortalece los ecosistemas de emprendimiento e innovación en América Latina.
 
+IMPORTANTE: Si tienes acceso a datos del reporte comparado, úsalos para extraer información específica sobre el ecosistema ${data.ecosystem}. El reporte comparado contiene datos de múltiples ecosistemas, incluyendo métricas, rankings, fortalezas, retos y recomendaciones específicas para cada ecosistema.
+
 Si no hay reportes específicos disponibles, crea un comunicado general que destaque:
 1. La importancia del ecosistema ${data.ecosystem} en el contexto de GEIAL y Latinoamérica
 2. Las tendencias actuales en este sector
@@ -318,11 +367,16 @@ El comunicado debe ser profesional, informativo y de aproximadamente 300-400 pal
 - Contacto: ${data.email}
 - Testimonio: ${data.testimonial || 'No se proporcionó testimonio específico'}
 
-${reporteLocal ? `Datos del reporte local: ${JSON.stringify(reporteLocal, null, 2)}` : 'No hay reporte específico disponible - usa información general del ecosistema'}
+${reporteLocal ? `Datos del reporte local específico: ${JSON.stringify(reporteLocal, null, 2)}` : 'No hay reporte específico disponible para este ecosistema'}
 
-${reporteComparado ? `Datos del reporte comparado: ${JSON.stringify(reporteComparado, null, 2)}` : 'No hay reporte comparado disponible - enfócate en las características propias del ecosistema'}
+${reporteComparado ? `Datos del reporte comparado (IMPORTANTE: Este reporte contiene información de múltiples ecosistemas, incluyendo datos específicos sobre ${data.ecosystem}): ${JSON.stringify(reporteComparado, null, 2)}` : 'No hay reporte comparado disponible'}
 
-Crea un comunicado profesional que destaque la importancia de este ecosistema en el contexto de GEIAL (Grupo de Ecosistemas Inteligentes de LatinoAmerica) y el desarrollo regional.${data.testimonial ? ` Incluye el siguiente testimonio cuando sea relevante: "${data.testimonial}"` : ''}`
+INSTRUCCIONES ESPECIALES:
+- Si tienes datos del reporte comparado, extrae TODA la información específica sobre el ecosistema ${data.ecosystem} que encuentres en él
+- Incluye métricas, rankings, fortalezas, retos, recomendaciones y cualquier dato cuantitativo específico de ${data.ecosystem}
+- Si no hay reporte específico pero sí comparado, usa los datos del comparado como fuente principal
+- Crea un comunicado profesional que destaque la importancia de este ecosistema en el contexto de GEIAL (Grupo de Ecosistemas Inteligentes de LatinoAmerica) y el desarrollo regional
+${data.testimonial ? `- Incluye el siguiente testimonio cuando sea relevante: "${data.testimonial}"` : ''}`
     }
 
     const response = await openai.chat.completions.create({
