@@ -147,9 +147,9 @@ export default function Home() {
             <div className="flex items-center space-x-3">
               <FileText className="h-8 w-8" />
               <div>
-                <h1 className="text-3xl font-bold">Generación de Comunicados by IAcelera</h1>
+                <h1 className="text-3xl font-bold">Generador de Comunicados de Prensa – Comunicados de Prensa GEIAL</h1>
                 <p className="text-primary-100 mt-1">
-                  Selecciona tu ecosistema y recibe informes personalizados
+                  IAcelera.cl, especialistas en la implementación de soluciones de automatización con inteligencia artificial, ha desarrollado la aplicación web "Comunicados de prensa GEIAL".
                 </p>
               </div>
             </div>
@@ -159,6 +159,20 @@ export default function Home() {
             >
               Admin
             </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Description Section */}
+      <div className="bg-white py-6">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="text-gray-700 text-sm leading-relaxed space-y-2">
+            <p>
+              Su propósito es permitir la creación ágil, intuitiva y personalizada de comunicados de prensa, adaptados a cada uno de los ecosistemas participantes en GEIAL 2025, reduciendo de esta manera en un 80% el tiempo de desarrollo de un comunicado de prensa.
+            </p>
+            <p>
+              La plataforma utiliza parámetros básicos definidos por el usuario del ecosistema solicitante y consulta automáticamente los datos correspondientes al año 2025 de GEIAL, generando comunicados con un formato estandarizado y profesional.
+            </p>
           </div>
         </div>
       </div>
@@ -176,7 +190,16 @@ export default function Home() {
             {/* Ecosystem Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Ecosistema *
+                <div className="flex items-center gap-2">
+                  Ecosistema participante de GEIAL *
+                  <div className="relative group">
+                    <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                      Selecciona el ecosistema al que debe hacer referencia el comunicado de prensa.
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                    </div>
+                  </div>
+                </div>
               </label>
               <div className="relative">
                 <select
@@ -204,7 +227,16 @@ export default function Home() {
             {/* Focus Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Focus
+                <div className="flex items-center gap-2">
+                  Foco del comunicado
+                  <div className="relative group">
+                    <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                      Indica el eje central del comunicado (por ejemplo: una fuerza dinamizadora, una dimensión del reporte u otro aspecto relevante).
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                    </div>
+                  </div>
+                </div>
               </label>
               <input
                 type="text"
@@ -218,7 +250,16 @@ export default function Home() {
             {/* Date Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Fecha
+                <div className="flex items-center gap-2">
+                  Fecha de Comunicación
+                  <div className="relative group">
+                    <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                      Especifica la fecha que debe aparecer en el comunicado.
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                    </div>
+                  </div>
+                </div>
               </label>
               <div className="relative">
                 <input
@@ -242,7 +283,16 @@ export default function Home() {
             {/* Milestone Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Hito
+                <div className="flex items-center gap-2">
+                  Hito a destacar
+                  <div className="relative group">
+                    <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                      Señala la actividad, evento o situación que deseas relevar (por ejemplo: lanzamiento del reporte, evento de difusión, logro destacado, etc.).
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                    </div>
+                  </div>
+                </div>
               </label>
               <input
                 type="text"
@@ -256,7 +306,16 @@ export default function Home() {
             {/* Email Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
+                <div className="flex items-center gap-2">
+                  Correo electrónico de contacto
+                  <div className="relative group">
+                    <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                      Ingresa el correo electrónico del profesional que solicita el comunicado.
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                    </div>
+                  </div>
+                </div>
               </label>
               <input
                 type="email"
@@ -272,11 +331,12 @@ export default function Home() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <div className="flex items-center gap-2">
-                  Testimonio
+                  Testimonio del ecosistema (opcional)
                   <div className="relative group">
                     <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                      Una declaración o comentario de una persona sobre el ecosistema que puede incluirse en el comunicado para darle más credibilidad y perspectiva personal
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10 max-w-xs">
+                      Puedes añadir una cuña o declaración de un actor relevante del ecosistema.<br/>
+                      En caso de no contar con ella, la aplicación dejará un espacio reservado en el formato de salida para que pueda agregarse manualmente.
                       <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
                     </div>
                   </div>
