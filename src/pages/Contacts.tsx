@@ -248,7 +248,7 @@ export default function Contacts() {
                   <div className="flex-shrink-0">
                     <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
                       <span className="text-sm font-medium text-primary-600">
-                        {contact.name.charAt(0).toUpperCase()}
+                        {contact.name?.charAt(0)?.toUpperCase() || 'C'}
                       </span>
                     </div>
                   </div>

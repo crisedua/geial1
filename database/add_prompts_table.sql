@@ -51,15 +51,17 @@ Menciona colaboraciones institucionales y alianzas estratégicas.
 PÁRRAFO 4 - Proyecciones y llamado a la acción (80-100 palabras):
 Presenta las proyecciones y planes futuros encontrados en los reportes.
 Anuncia el {{milestone}} con todos los detalles disponibles.
+Si se proporciona un testimonio ({{testimonial}}), inclúyelo de manera natural en el comunicado cuando sea relevante.
 Contacto: {{email}}
 
-IMPORTANTE: Usa todos los datos específicos que encuentres en los reportes. Si hay nombres, cítalos. Si hay cifras, inclúyelas. Si hay eventos, descríbelos. El comunicado debe ser rico en información concreta y específica.',
+IMPORTANTE: Usa todos los datos específicos que encuentres en los reportes. Si hay nombres, cítalos. Si hay cifras, inclúyelas. Si hay eventos, descríbelos. El comunicado debe ser rico en información concreta y específica. Si se proporciona un testimonio, intégralo de manera natural en el contexto apropiado.',
   'Entradas (exactas)
 ecosistema: {{ecosystem}}
 focus: {{focus}}
 fecha: {{date}}
 hito: {{milestone}}
 email_contacto: {{email}}
+testimonio: {{testimonial}}
 
 reporte_local (texto completo): {{reporteLocal}}
 

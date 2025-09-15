@@ -15,6 +15,7 @@ interface GeneratePublicComunicadoRequest {
   date?: string
   milestone?: string
   email: string
+  testimonial?: string
 }
 
 export const handler: Handler = async (event) => {
@@ -30,9 +31,9 @@ export const handler: Handler = async (event) => {
   }
 
   try {
-    const { ecosystem, focus, date, milestone, email }: GeneratePublicComunicadoRequest = JSON.parse(event.body || '{}')
+    const { ecosystem, focus, date, milestone, email, testimonial }: GeneratePublicComunicadoRequest = JSON.parse(event.body || '{}')
 
-    console.log('Parsed data:', { ecosystem, focus, date, milestone, email })
+    console.log('Parsed data:', { ecosystem, focus, date, milestone, email, testimonial })
 
     if (!ecosystem || !email) {
       console.log('Validation failed - missing required fields')
@@ -144,6 +145,7 @@ export const handler: Handler = async (event) => {
       date,
       milestone,
       email,
+      testimonial,
       reports: availableReports,
       prompt: promptData
     })
@@ -180,6 +182,7 @@ export const handler: Handler = async (event) => {
         date,
         milestone,
         email,
+        testimonial,
         status: 'completed',
         reports_used: availableReports.map(r => r.id)
       })
@@ -227,6 +230,7 @@ async function generatePublicComunicado(data: {
   date?: string
   milestone?: string
   email: string
+  testimonial?: string
   reports: any[]
   prompt?: any
 }): Promise<string> {
@@ -287,6 +291,7 @@ async function generatePublicComunicado(data: {
         ?.replace(/\{\{date\}\}/g, data.date || 'No especificado')
         ?.replace(/\{\{milestone\}\}/g, data.milestone || 'No especificado')
         ?.replace(/\{\{email\}\}/g, data.email)
+        ?.replace(/\{\{testimonial\}\}/g, data.testimonial || 'No se proporcionó testimonio específico')
         ?.replace(/\{\{reporteLocal\}\}/g, reporteLocal ? JSON.stringify(reporteLocal, null, 2) : 'No hay reporte específico disponible para este ecosistema')
         ?.replace(/\{\{reporteComparado\}\}/g, reporteComparado ? JSON.stringify(reporteComparado, null, 2) : 'No hay reporte comparado disponible')
     } else {
@@ -311,12 +316,13 @@ El comunicado debe ser profesional, informativo y de aproximadamente 300-400 pal
 - Fecha: ${fechaFormateada}
 - Hito/Evento: ${data.milestone || 'Análisis del ecosistema'}
 - Contacto: ${data.email}
+- Testimonio: ${data.testimonial || 'No se proporcionó testimonio específico'}
 
 ${reporteLocal ? `Datos del reporte local: ${JSON.stringify(reporteLocal, null, 2)}` : 'No hay reporte específico disponible - usa información general del ecosistema'}
 
 ${reporteComparado ? `Datos del reporte comparado: ${JSON.stringify(reporteComparado, null, 2)}` : 'No hay reporte comparado disponible - enfócate en las características propias del ecosistema'}
 
-Crea un comunicado profesional que destaque la importancia de este ecosistema en el contexto de GEIAL (Grupo de Ecosistemas Inteligentes de LatinoAmerica) y el desarrollo regional.`
+Crea un comunicado profesional que destaque la importancia de este ecosistema en el contexto de GEIAL (Grupo de Ecosistemas Inteligentes de LatinoAmerica) y el desarrollo regional.${data.testimonial ? ` Incluye el siguiente testimonio cuando sea relevante: "${data.testimonial}"` : ''}`
     }
 
     const response = await openai.chat.completions.create({

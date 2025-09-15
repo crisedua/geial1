@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useRef } from 'react'
-import { FileText, Send, Calendar, ChevronDown, Download } from 'lucide-react'
+import { FileText, Send, Calendar, ChevronDown, Download, Info } from 'lucide-react'
 import { useDatabase } from '../contexts/DatabaseContext'
 import { Ecosystem } from '../types'
 
@@ -12,7 +12,8 @@ export default function Home() {
     focus: '',
     date: '',
     milestone: '',
-    email: ''
+    email: '',
+    testimonial: ''
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -265,6 +266,32 @@ export default function Home() {
                 placeholder="su.email@ejemplo.com"
                 required
               />
+            </div>
+
+            {/* Testimonial Field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="flex items-center gap-2">
+                  Testimonio
+                  <div className="relative group">
+                    <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                      Una declaración o comentario de una persona sobre el ecosistema que puede incluirse en el comunicado para darle más credibilidad y perspectiva personal
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                    </div>
+                  </div>
+                </div>
+              </label>
+              <textarea
+                value={formData.testimonial}
+                onChange={(e) => handleInputChange('testimonial', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                placeholder="Ingrese un testimonio o declaración relevante para incluir en el comunicado"
+                rows={3}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Opcional: Incluya un testimonio o declaración que desee destacar en el comunicado
+              </p>
             </div>
 
             {/* Error Message */}

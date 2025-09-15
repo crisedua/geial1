@@ -52,7 +52,7 @@ export default function Settings() {
                 <div className="flex items-center space-x-4">
                   <div className="h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center">
                     <span className="text-xl font-medium text-primary-600">
-                      {user?.email.charAt(0).toUpperCase()}
+                      {user?.email?.charAt(0)?.toUpperCase() || 'U'}
                     </span>
                   </div>
                   <div>

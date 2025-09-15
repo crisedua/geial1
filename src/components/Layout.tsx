@@ -88,7 +88,7 @@ export default function Layout() {
               <div className="flex-shrink-0">
                 <div className="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center">
                   <span className="text-sm font-medium text-white">
-                    {user.email.charAt(0).toUpperCase()}
+                    {user?.email?.charAt(0)?.toUpperCase() || 'U'}
                   </span>
                 </div>
               </div>
@@ -138,7 +138,7 @@ export default function Layout() {
               <div className="flex-shrink-0">
                 <div className="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center">
                   <span className="text-sm font-medium text-white">
-                    {user.email.charAt(0).toUpperCase()}
+                    {user?.email?.charAt(0)?.toUpperCase() || 'U'}
                   </span>
                 </div>
               </div>
