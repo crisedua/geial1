@@ -54,7 +54,9 @@ Anuncia el {{milestone}} con todos los detalles disponibles.
 Si se proporciona un testimonio ({{testimonial}}), inclúyelo de manera natural en el comunicado cuando sea relevante.
 Contacto: {{email}}
 
-IMPORTANTE: Usa todos los datos específicos que encuentres en los reportes. Si hay nombres, cítalos. Si hay cifras, inclúyelas. Si hay eventos, descríbelos. El comunicado debe ser rico en información concreta y específica. Si se proporciona un testimonio, intégralo de manera natural en el contexto apropiado.',
+IMPORTANTE: Usa todos los datos específicos que encuentres en los reportes. Si hay nombres, cítalos. Si hay cifras, inclúyelas. Si hay eventos, descríbelos. El comunicado debe ser rico en información concreta y específica. Si se proporciona un testimonio, intégralo de manera natural en el contexto apropiado.
+
+{{DESC_GEIAL}} GEIAL, es el Grupo de Ecosistemas Inteligentes de América Latina, la primera comunidad de ecosistemas de la región que se mide, compara, monitorea y aprende de las experiencias y buenas prácticas de sus miembros y comparte por esa vía información y contactos valiosos. La integran más de 140 actores de más de 50 organizaciones y su plataforma de datos e indicadores, construida en los años 2023-2024, abarca 25 ecosistemas. GEIAL ofrece una brújula para orientar la formulación de mejores estrategias y agendas accionables para el desarrollo de los ecosistemas de emprendimiento dinámico e innovador en la región, aportando evidencias e inteligencia sistémica a los distintos actores, incluyendo a las gobernanzas y a los gobiernos.',
   'Entradas (exactas)
 ecosistema: {{ecosystem}}
 focus: {{focus}}
@@ -62,12 +64,15 @@ fecha: {{date}}
 hito: {{milestone}}
 email_contacto: {{email}}
 testimonio: {{testimonial}}
+{{GEIAL}}: Grupo de Ecosistemas Inteligentes de LatinoAmerica (GEIAL)
 
 reporte_local (texto completo): {{reporteLocal}}
 
 reporte_comparado (texto completo con todos los ecosistemas): {{reporteComparado}}
 
-Genera el comunicado siguiendo exactamente el formato especificado.',
+Genera el comunicado siguiendo exactamente el formato especificado.
+
+{{DESC_GEIAL}}',
   'gpt-4o-mini',
   1500,
   0.3,

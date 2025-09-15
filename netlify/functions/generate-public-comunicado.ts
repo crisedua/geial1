@@ -339,6 +339,8 @@ async function generatePublicComunicado(data: {
         ?.replace(/\{\{milestone\}\}/g, data.milestone || 'No especificado')
         ?.replace(/\{\{email\}\}/g, data.email)
         ?.replace(/\{\{testimonial\}\}/g, data.testimonial || 'No se proporcionó testimonio específico')
+        ?.replace(/\{\{GEIAL\}\}/g, 'Grupo de Ecosistemas Inteligentes de LatinoAmerica (GEIAL)')
+        ?.replace(/\{\{DESC_GEIAL\}\}/g, 'GEIAL, es el Grupo de Ecosistemas Inteligentes de América Latina, la primera comunidad de ecosistemas de la región que se mide, compara, monitorea y aprende de las experiencias y buenas prácticas de sus miembros y comparte por esa vía información y contactos valiosos. La integran más de 140 actores de más de 50 organizaciones y su plataforma de datos e indicadores, construida en los años 2023-2024, abarca 25 ecosistemas. GEIAL ofrece una brújula para orientar la formulación de mejores estrategias y agendas accionables para el desarrollo de los ecosistemas de emprendimiento dinámico e innovador en la región, aportando evidencias e inteligencia sistémica a los distintos actores, incluyendo a las gobernanzas y a los gobiernos.')
         ?.replace(/\{\{reporteLocal\}\}/g, reporteLocal ? JSON.stringify(reporteLocal, null, 2) : 'No hay reporte específico disponible para este ecosistema')
         ?.replace(/\{\{reporteComparado\}\}/g, reporteComparado ? JSON.stringify(reporteComparado, null, 2) : 'No hay reporte comparado disponible')
     } else {
